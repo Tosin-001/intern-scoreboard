@@ -1,0 +1,46 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --------------------------------------------------------------------
+    // admins/{uid}
+    // A user may read their own admin doc only (to confirm admin status
+    // client-side, e.g. to conditionally render admin UI). No client writes
+    // — admin accounts are provisioned manually, same as before.
+    // --------------------------------------------------------------------
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // --------------------------------------------------------------------
+    // interns/{internId}
+    // Public read of active (non-deleted) interns only — this is what
+    // powers the real-time public leaderboard via onSnapshot.
+    // All writes denied here by design: writes happen server-side through
+    // firebase-admin (Server Actions), which bypasses these rules. This
+    // rule's job is to block any *rogue client-side* write attempt.
+    // --------------------------------------------------------------------
+    match /interns/{internId} {
+      allow read: if resource.data.isDeleted == false;
+      // Admins reading soft-deleted rows (e.g. an admin dashboard view)
+      // goes through a server-side Route Handler instead of direct client
+      // reads, so no separate "admin can read deleted" rule is needed here.
+      allow write: if false;
+    }
+
+    // --------------------------------------------------------------------
+    // scoreHistory/{historyId}
+    // No client reads or writes at all. This collection is written only by
+    // lib/actions/scores.ts (Server Actions using firebase-admin, inside a
+    // Firestore transaction with the matching interns.score update — no
+    // Cloud Function involved, Spark-plan compatible), and read only via a
+    // server-side Route Handler for the admin dashboard.
+    // --------------------------------------------------------------------
+    match /scoreHistory/{historyId} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}
