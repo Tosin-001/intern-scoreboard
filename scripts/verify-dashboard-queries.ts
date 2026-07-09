@@ -34,8 +34,8 @@ async function main() {
     console.log("ALL_QUERIES_OK");
     console.log("total:", countSnap.data().count);
     console.log("average:", avgSnap.data().avgScore);
-    console.log("highest:", highestSnap.empty ? "none" : highestSnap.docs[0].data().score);
-    console.log("lowest:", lowestSnap.empty ? "none" : lowestSnap.docs[0].data().score);
+    console.log("highest:", highestSnap.docs[0]?.data().score ?? "none");
+    console.log("lowest:", lowestSnap.docs[0]?.data().score ?? "none");
   } catch (err) {
     console.error("QUERY_FAILED:", err instanceof Error ? err.message : err);
     process.exit(1);

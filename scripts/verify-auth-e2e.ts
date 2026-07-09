@@ -30,15 +30,14 @@ async function main() {
     console.error("NO_ADMIN_USERS_FOUND — cannot test auth flow.");
     process.exit(1);
   }
-const firstUser = usersResult.users[0];
+  const firstUser = usersResult.users[0];
+  if (!firstUser) {
+    console.error("No admin users found.");
+    process.exit(1);
+  }
 
-if (!firstUser) {
-  console.error("No admin users found.");
-  process.exit(1);
-}
-
-const uid = firstUser.uid;
-console.log("Testing with admin UID:", uid, firstUser.email);
+  const uid = firstUser.uid;
+  console.log("Testing with admin UID:", uid, firstUser.email);
 
   // Step 1: mint a custom token (Admin SDK)
   const customToken = await db.createCustomToken(uid);
@@ -72,7 +71,7 @@ console.log("Testing with admin UID:", uid, firstUser.email);
     console.error("SESSION_CREATE_FAILED:", await sessionRes.text());
     process.exit(1);
   }
-  const cookie = setCookie.split(";")[0];
+  const cookie = setCookie.split(";")[0] ?? "";
 
   // Step 4: use the cookie to hit /dashboard directly
   const dashRes = await fetch("http://localhost:3000/dashboard", {
@@ -81,7 +80,7 @@ console.log("Testing with admin UID:", uid, firstUser.email);
   });
   console.log("DASHBOARD_STATUS:", dashRes.status);
   const body = await dashRes.text();
-  console.log("Contains 'Admin Dashboard':", body.includes("Admin Dashboard"));
+  console.log("Contains 'Signed in as':", body.includes("Signed in as"));
   console.log("Contains error overlay:", /Unhandled Runtime Error|Internal Server Error/.test(body));
 }
 

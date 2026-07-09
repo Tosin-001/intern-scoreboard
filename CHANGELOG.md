@@ -4,6 +4,43 @@ All notable changes to this project are logged here.
 
 ---
 
+## [2026-07-09] — Phase 5 complete: Score Management, verified end-to-end
+
+### Context
+- Phase 4 (Intern CRUD) was completed, verified, committed, and tagged `v0.4` in a prior session. Phase 5 work began, was interrupted mid-implementation by a Desktop Commander disconnect, and was captured in a `WIP: Phase 5 score management` commit. This entry covers finishing that work from the existing filesystem state — nothing was recreated from scratch.
+
+### Added
+- **`(admin)/scores` page** — dedicated Score Management page, separate from the Interns CRUD page per the spec's "update scores without editing the entire intern record" requirement. Includes:
+  - Quick-adjust buttons (−5/−1/+1/+5) per intern, calling the existing `PATCH /api/interns/[id]` score-only path.
+  - A direct-set numeric input per intern (on blur) for exact-value changes.
+  - A bulk-update panel: multi-select interns via checkboxes, apply either a delta (add/subtract N) or set-to-value across the selection, via the existing `POST /api/scores/bulk` endpoint.
+  - A "Recent Score Changes" side panel showing the last 15 changes with intern name, old→new score, delta badge, and relative time.
+- **`internName` denormalized onto `scoreHistory`** (`lib/actions/scores.ts`, `types/firestore.ts`) — written inside the same transaction that already reads the intern doc, so displaying history never needs a per-row intern lookup (no N+1 reads).
+- **`getRecentScoreHistory()`** (`lib/actions/scores.ts`) + **`GET /api/scores/history?limit=N`** — admin-only, session-gated, powers the Recent Changes panel.
+- **`lib/utils/time.ts`** — small `timeAgo()` relative-time helper for the history panel.
+- `/scores` added to `middleware.ts`'s protected-route matcher, and to both `AdminSidebar` and `MobileTopBar` nav lists. Dashboard "Quick actions" card links to it too.
+- **Diagnostic scripts** (kept as permanent utilities, same pattern as earlier phases): `scripts/verify-phase5.ts` (full end-to-end: session → `/scores` page → single adjust → confirms `scoreHistory` row written with correct `internName`/`updatedBy` → confirms `/api/scores/history` surfaces it → bulk update → revert) and `scripts/verify-nav-links.ts` (confirms sidebar nav hrefs render on all three admin pages with a real session).
+
+### Fixed (found during this pass, not new regressions)
+- **Bug:** `updateIntern()` in `lib/actions/interns.ts` didn't check email uniqueness on *edit* (only `createIntern()` did) — an admin could rename one intern's email to collide with another's, silently. Added the same duplicate check to the update path.
+- **TypeScript strict-mode errors blocking `npm run build`:** several `noUncheckedIndexedAccess` violations from array-index access without a guard (`docs[0].data()` after only checking `.empty`, and `cookie.split(";")[0]` typed as possibly `undefined`) — fixed in `(admin)/dashboard/page.tsx`, `lib/actions/interns.ts`, `scripts/verify-auth-e2e.ts`, and `scripts/verify-dashboard-queries.ts`.
+- **`tsconfig.json`** now excludes `archive/` and `backups/` — those folders intentionally reference removed dependencies (Supabase, Cloud Functions) and were never meant to be type-checked; they were only ever noise in `tsc`/build output, not real errors.
+- Stray formatting/indentation artifact in `scripts/verify-auth-e2e.ts` left over from the interrupted session, cleaned up.
+- **Build reliability:** `src/app/layout.tsx` was using `next/font/google` (Inter), which requires build-time network access to Google's font CDN — a fragile dependency that caused `npm run build` to hang/fail on a transient network timeout during this verification pass. Replaced with a system font stack (`-apple-system, Segoe UI, Roboto...`, the same fallback chain Vercel/Linear/GitHub use) in `globals.css`. Zero external dependency now, same visual result.
+
+### Verified (all via live testing against a real session, not just code review)
+- `npm run build` — passes completely, all 14 routes compile, zero TypeScript errors.
+- `GET /scores` (no cookie) → 307 to `/login`; (valid session) → 200, renders "Score Management".
+- `PATCH /api/interns/[id]` with a `score` field → correctly updates the intern doc AND writes a `scoreHistory` row in the same call, confirmed by direct Firestore reads before/after.
+- The written `scoreHistory` row has the correct denormalized `internName` and a real admin `updatedBy` UID.
+- `GET /api/scores/history` → 200, returns the just-written entry as the most recent.
+- `POST /api/scores/bulk` → 200, correctly updates and reverts a test score.
+- Sidebar/mobile nav `href="/scores"`, `/interns`, `/reports`, `/dashboard` all confirmed present on `/scores`, `/dashboard`, and `/interns` pages with a live session.
+- **No new Firestore composite indexes required** — confirmed live: `scoreHistory` queries used here are a single-field equality filter (`internId ==`, auto-indexed) and a single-field `orderBy` with no `where` clause (auto-indexed). Zero `FAILED_PRECONDITION` errors during any test run.
+- Dev server logs across the full verification run: zero 500s, zero stack traces — every response was 200/307/400 (the one 400 was a deliberately-invalid test case correctly rejected by validation).
+
+---
+
 ## [2026-07-08] — Verification pass: fixed indexes, rules, environment bugs; confirmed / /login /dashboard all work end-to-end
 
 ### Fixed
