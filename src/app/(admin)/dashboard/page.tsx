@@ -19,8 +19,8 @@ export default async function DashboardPage() {
 
   const totalInterns = countSnap.data().count;
   const averageScore = Math.round(((avgSnap.data().avgScore as number) || 0) * 10) / 10;
-  const highestScore = highestSnap.empty ? "—" : highestSnap.docs[0].data().score;
-  const lowestScore = lowestSnap.empty ? "—" : lowestSnap.docs[0].data().score;
+  const highestScore = highestSnap.docs[0]?.data().score ?? "—";
+  const lowestScore = lowestSnap.docs[0]?.data().score ?? "—";
 
   return (
     <main className="container-fluid py-4 px-4">
@@ -42,8 +42,11 @@ export default async function DashboardPage() {
           <p className="text-muted-2 small mb-3">
             Manage interns, update scores, and review rankings.
           </p>
-          <a href="/interns" className="btn btn-primary btn-sm">
+          <a href="/interns" className="btn btn-primary btn-sm me-2">
             Manage Interns →
+          </a>
+          <a href="/scores" className="btn btn-outline-primary btn-sm">
+            Manage Scores →
           </a>
         </div>
       </div>

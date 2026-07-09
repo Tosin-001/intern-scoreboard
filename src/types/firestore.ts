@@ -38,6 +38,14 @@ export interface InternDoc {
  */
 export interface ScoreHistoryDoc {
   internId: string;
+  /**
+   * Denormalized at write time (the intern doc is already read inside the
+   * same transaction that writes this) so the history UI doesn't need an
+   * extra lookup per row. Not kept in sync retroactively if a name changes
+   * later — this reflects the name at the moment of the score change,
+   * which is arguably more correct for an audit log anyway.
+   */
+  internName: string;
   oldScore: number;
   newScore: number;
   updatedBy: string | null;

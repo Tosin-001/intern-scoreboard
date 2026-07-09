@@ -30,8 +30,15 @@ async function main() {
     console.error("NO_ADMIN_USERS_FOUND — cannot test auth flow.");
     process.exit(1);
   }
-  const uid = usersResult.users[0].uid;
-  console.log("Testing with admin UID:", uid, usersResult.users[0].email);
+const firstUser = usersResult.users[0];
+
+if (!firstUser) {
+  console.error("No admin users found.");
+  process.exit(1);
+}
+
+const uid = firstUser.uid;
+console.log("Testing with admin UID:", uid, firstUser.email);
 
   // Step 1: mint a custom token (Admin SDK)
   const customToken = await db.createCustomToken(uid);

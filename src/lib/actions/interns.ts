@@ -111,6 +111,17 @@ export async function updateIntern(
   if (!snap.exists) throw new Error("Intern not found.");
   if (snap.data()?.isDeleted) throw new Error("Cannot edit a deleted intern.");
 
+  if (profileFields.email && profileFields.email !== snap.data()?.email) {
+    const dupe = await adminDb
+      .collection("interns")
+      .where("email", "==", profileFields.email)
+      .limit(1)
+      .get();
+    if (!dupe.empty && dupe.docs[0]?.id !== internId) {
+      throw new Error("An intern with this email already exists.");
+    }
+  }
+
   const updates: Record<string, unknown> = { ...profileFields, updatedAt: FieldValue.serverTimestamp() };
   if (profileFields.fullName) {
     updates.fullNameLower = profileFields.fullName.toLowerCase();

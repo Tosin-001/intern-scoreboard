@@ -73,6 +73,7 @@ async function applyScoreUpdate(
     const historyRef = adminDb.collection("scoreHistory").doc();
     tx.set(historyRef, {
       internId,
+      internName: data.fullName,
       oldScore,
       newScore,
       updatedBy: adminUid,
@@ -128,4 +129,46 @@ export async function bulkUpdateScores(
   }
 
   return results;
+}
+
+export interface ScoreHistoryEntry {
+  id: string;
+  internId: string;
+  internName: string;
+  oldScore: number;
+  newScore: number;
+  updatedBy: string | null;
+  updatedAt: string | null;
+}
+
+/**
+ * Recent score changes across all interns, most recent first. Powers the
+ * "Recent Score Changes" panel on the Score Management page. Uses
+ * `internName` denormalized onto scoreHistory at write time — no per-row
+ * intern lookup needed. Single-field orderBy with no `where` clause uses
+ * Firestore's automatic index, so no new composite index was required for
+ * this (see the Phase 5 audit).
+ */
+export async function getRecentScoreHistory(limitCount = 20): Promise<ScoreHistoryEntry[]> {
+  const session = await verifySession();
+  if (!session) throw new Error("Not authorized.");
+
+  const snap = await adminDb
+    .collection("scoreHistory")
+    .orderBy("updatedAt", "desc")
+    .limit(limitCount)
+    .get();
+
+  return snap.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      internId: data.internId,
+      internName: data.internName ?? "(unknown)",
+      oldScore: data.oldScore,
+      newScore: data.newScore,
+      updatedBy: data.updatedBy ?? null,
+      updatedAt: data.updatedAt?.toDate?.().toISOString() ?? null,
+    };
+  });
 }

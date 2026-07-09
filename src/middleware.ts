@@ -18,6 +18,7 @@ export function middleware(request: NextRequest) {
   const isAdminRoute =
     request.nextUrl.pathname.startsWith("/dashboard") ||
     request.nextUrl.pathname.startsWith("/interns") ||
+    request.nextUrl.pathname.startsWith("/scores") ||
     request.nextUrl.pathname.startsWith("/reports") ||
     request.nextUrl.pathname.startsWith("/settings");
 
