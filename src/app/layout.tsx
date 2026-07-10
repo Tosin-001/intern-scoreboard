@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
+
 
 // Deliberately NOT using next/font/google here — it requires build-time
 // network access to Google's font CDN, which is a fragile dependency for
@@ -20,7 +22,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+  {children}
+  <Analytics />
+</body>
     </html>
   );
 }
