@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import type { InternRecord } from "@/lib/actions/interns";
 import { computeStatus } from "@/types/firestore";
 import StatusBadge from "@/components/shared/StatusBadge";
@@ -14,6 +14,7 @@ export default function InternsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [department, setDepartment] = useState("");
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingIntern, setEditingIntern] = useState<InternRecord | null>(null);
@@ -38,8 +39,17 @@ export default function InternsPage() {
     loadInterns();
   }, [loadInterns]);
 
-  const visibleInterns = interns
-    .filter((i) => !i.isDeleted)
+  // All derived client-side from `interns`, already loaded via the fetch
+  // above — the department filter adds no new Firestore reads.
+  const activeInterns = interns.filter((i) => !i.isDeleted);
+
+  const departments = useMemo(
+    () => Array.from(new Set(activeInterns.map((i) => i.department))).sort(),
+    [activeInterns]
+  );
+
+  const visibleInterns = activeInterns
+    .filter((i) => (department ? i.department === department : true))
     .filter((i) =>
       search.trim() === ""
         ? true
@@ -71,13 +81,31 @@ export default function InternsPage() {
 
       <div className="card mb-3">
         <div className="card-body py-2">
-          <input
-            type="search"
-            className="form-control"
-            placeholder="Search by name or department…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <div className="row g-2">
+            <div className="col-12 col-md-8">
+              <input
+                type="search"
+                className="form-control"
+                placeholder="Search by name or department…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="col-12 col-md-4">
+              <select
+                className="form-select"
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+              >
+                <option value="">All departments</option>
+                {departments.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -87,10 +115,15 @@ export default function InternsPage() {
       {!loading && !error && visibleInterns.length === 0 && (
         <EmptyState
           icon="🧑‍💻"
-          title={search ? "No matching interns" : "No interns yet"}
-          description={search ? "Try a different search term." : "Add your first intern to get started."}
+          title={search || department ? "No matching interns" : "No interns yet"}
+          description={
+            search || department
+              ? "Try a different search term or department."
+              : "Add your first intern to get started."
+          }
           action={
-            !search && (
+            !search &&
+            !department && (
               <button className="btn btn-primary btn-sm" onClick={openCreateModal}>
                 + Add Intern
               </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   collection,
   query,
@@ -13,11 +13,16 @@ import { computeStatus, type LeaderboardEntry } from "@/types/firestore";
 import StatusBadge from "@/components/shared/StatusBadge";
 import Spinner from "@/components/shared/Spinner";
 import EmptyState from "@/components/shared/EmptyState";
+import LeaderboardTable from "@/components/leaderboard/LeaderboardTable";
 
 export default function PublicLeaderboardPage() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [search, setSearch] = useState("");
+  const [department, setDepartment] = useState("");
+  const [top10Only, setTop10Only] = useState(false);
 
   useEffect(() => {
     const q = query(
@@ -54,6 +59,29 @@ export default function PublicLeaderboardPage() {
     return () => unsubscribe();
   }, []);
 
+  // All derived client-side from `entries`, already loaded via the
+  // onSnapshot listener above — no additional Firestore reads for any of
+  // search, department filter, or the Top 10 toggle.
+  const departments = useMemo(
+    () => Array.from(new Set(entries.map((e) => e.department))).sort(),
+    [entries]
+  );
+
+  const isFiltering = search.trim() !== "" || department !== "" || top10Only;
+
+  const filteredEntries = useMemo(() => {
+    return entries.filter((e) => {
+      if (top10Only && e.rank > 10) return false;
+      if (department && e.department !== department) return false;
+      if (search.trim() && !e.fullName.toLowerCase().includes(search.trim().toLowerCase()))
+        return false;
+      return true;
+    });
+  }, [entries, search, department, top10Only]);
+
+  // Podium only makes sense for the unfiltered, full board — once a search
+  // or filter is active, show a plain filtered table instead (still using
+  // each intern's true overall rank, not a re-numbered position).
   const podium = entries.slice(0, 3);
   const rest = entries.slice(3);
 
@@ -83,7 +111,54 @@ export default function PublicLeaderboardPage() {
           />
         )}
 
-        {!loading && !error && podium.length > 0 && (
+        {!loading && !error && entries.length > 0 && (
+          <div className="card mb-4">
+            <div className="card-body py-3">
+              <div className="row g-2 align-items-center">
+                <div className="col-12 col-md-5">
+                  <input
+                    type="search"
+                    className="form-control"
+                    placeholder="Search by name…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+                <div className="col-8 col-md-4">
+                  <select
+                    className="form-select"
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                  >
+                    <option value="">All departments</option>
+                    {departments.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-4 col-md-3 d-flex align-items-center">
+                  <div className="form-check form-switch mb-0">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      role="switch"
+                      id="top10Toggle"
+                      checked={top10Only}
+                      onChange={(e) => setTop10Only(e.target.checked)}
+                    />
+                    <label className="form-check-label small" htmlFor="top10Toggle">
+                      Top 10 only
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && !isFiltering && podium.length > 0 && (
           <div className="row g-3 mb-4">
             {[podium[1], podium[0], podium[2]].map((entry, i) =>
               entry ? (
@@ -112,35 +187,20 @@ export default function PublicLeaderboardPage() {
           </div>
         )}
 
-        {!loading && !error && rest.length > 0 && (
-          <div className="card">
-            <div className="table-responsive">
-              <table className="table table-clean mb-0">
-                <thead>
-                  <tr>
-                    <th scope="col">Rank</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Department</th>
-                    <th scope="col">Score</th>
-                    <th scope="col">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rest.map((entry) => (
-                    <tr key={entry.id}>
-                      <td className="fw-medium">#{entry.rank}</td>
-                      <td>{entry.fullName}</td>
-                      <td className="text-muted-2">{entry.department}</td>
-                      <td className="fw-bold">{entry.score}</td>
-                      <td>
-                        <StatusBadge status={entry.status} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+        {!loading && !error && !isFiltering && rest.length > 0 && (
+          <LeaderboardTable entries={rest} />
+        )}
+
+        {!loading && !error && isFiltering && filteredEntries.length === 0 && (
+          <EmptyState
+            icon="🔍"
+            title="No matching interns"
+            description="Try a different search term or filter."
+          />
+        )}
+
+        {!loading && !error && isFiltering && filteredEntries.length > 0 && (
+          <LeaderboardTable entries={filteredEntries} />
         )}
       </div>
     </main>

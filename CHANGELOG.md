@@ -4,6 +4,23 @@ All notable changes to this project are logged here.
 
 ---
 
+## [2026-07-10] — Phase 7: Search & filter, client-side only
+
+### Added
+- **Public leaderboard (`/`)** — search by name, department filter dropdown, "Top 10 only" toggle. All derived from the `entries` array already populated by the existing `onSnapshot` listener — zero new Firestore reads. When any filter is active, the podium is hidden in favor of a plain filtered table (podium ceremony doesn't make sense for a filtered subset); each row still shows the intern's true overall rank, not a re-numbered position within the filtered results.
+- **`src/components/leaderboard/LeaderboardTable.tsx`** — extracted shared table markup, used for both the default "rest of the board" view and the filtered-results view, avoiding duplication.
+- **`(admin)/interns`** — department filter dropdown added alongside the existing Phase 4 name/department search. Same client-side, zero-new-reads approach, filtering the array already fetched via `GET /api/interns`.
+
+### Explicitly not built (per plan)
+- Pagination — deferred, not needed at current scale (2 interns); would be cursor-based per `docs/ARCHITECTURE.md` if the roster grows.
+
+### Verified
+- `npx tsc --noEmit` — zero errors.
+- `npm run build` — exit code 0, all 13 routes generated cleanly.
+- Live check: `/` returns 200, no error overlay, correct initial SSR loading state. Note: full interactive verification of the search/filter/Top 10 controls requires a real browser — both pages are Client Components whose filter UI only renders after client-side hydration and the async data load (`onSnapshot` / `fetch`) resolve, which a raw HTTP request can't exercise. Code reviewed directly and confirmed logically correct; recommend a manual click-through before considering this fully verified.
+
+---
+
 ## [2026-07-10] — Phase 6: Storage rules, error pages, dashboard charts
 
 ### Added
