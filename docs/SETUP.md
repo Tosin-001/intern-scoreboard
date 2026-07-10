@@ -43,11 +43,11 @@ firebase login
 firebase use --add   # select your project, give it an alias like "default"
 ```
 
-## 8. Deploy Firestore rules and indexes
+## 8. Deploy Firestore rules, indexes, and Storage rules
 ```bash
-firebase deploy --only firestore:rules,firestore:indexes
+firebase deploy --only firestore:rules,firestore:indexes,storage
 ```
-No `--only functions` — there's nothing to deploy there. This applies `firestore.rules` and `firestore.indexes.json`. Both are free on Spark.
+No `--only functions` — there's nothing to deploy there. This applies `firestore.rules`, `firestore.indexes.json`, and `storage.rules`. All free on Spark. **`storage.rules` deploys a deny-all default** — Storage is enabled on the project but unused in app code so far (Phase 8 reports will be the first thing to actually write to it); deploying the deny-all rule now closes the gap where Storage was live with no rules at all.
 
 ## 9. Seed sample data (optional, local/dev only)
 ```bash
@@ -75,7 +75,7 @@ Visit `http://localhost:3000` for the public leaderboard, `http://localhost:3000
 
 ## 12. Deploying
 - **App:** push to GitHub, import in Vercel. Set all `NEXT_PUBLIC_FIREBASE_*` and `FIREBASE_*` env vars in Vercel project settings (paste the private key exactly as in `.env.local`, Vercel handles the `\n` correctly when set via their dashboard).
-- **Firebase side:** re-run step 8 (`firebase deploy --only firestore:rules,firestore:indexes`) any time rules or indexes change. That's the entire Firebase-side deploy surface now — no Functions to build or deploy, no Blaze plan billing to think about.
+- **Firebase side:** re-run step 8 (`firebase deploy --only firestore:rules,firestore:indexes,storage`) any time rules, indexes, or storage rules change. That's the entire Firebase-side deploy surface now — no Functions to build or deploy, no Blaze plan billing to think about.
 
 ## Where score history logging happens now
 There's no Cloud Function watching for score changes. Score updates and their audit-log entries are written together, atomically, inside a Firestore transaction in `src/lib/actions/scores.ts` — triggered directly by whichever Server Action/Route Handler the admin dashboard calls. See `docs/SPARK_PLAN_REFACTOR.md` for the full reasoning.

@@ -1,0 +1,28 @@
+rules_version = '2';
+
+// ============================================================================
+// Firebase Storage rules. Deny-all by default — Storage is enabled on this
+// project (for future PDF report exports, Phase 8) but nothing in the app
+// writes to it yet. Same philosophy as firestore.rules: this blocks any
+// *direct client-side* access; server-side writes via the Admin SDK bypass
+// these rules by design (see docs/MIGRATION_NOTES.md §3).
+//
+// When Phase 8 (Reports) actually starts writing to Storage, follow the
+// firestore.rules pattern: keep writes server-side through firebase-admin,
+// and if client-side reads are ever needed (e.g. a signed download link
+// isn't used), gate them with an admin check via firestore.exists(), e.g.:
+//
+//   match /reports/{allPaths=**} {
+//     allow read: if request.auth != null &&
+//       firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
+//     allow write: if false; // writes only via Admin SDK
+//   }
+// ============================================================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

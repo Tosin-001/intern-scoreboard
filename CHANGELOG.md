@@ -4,6 +4,28 @@ All notable changes to this project are logged here.
 
 ---
 
+## [2026-07-10] — Phase 6: Storage rules, error pages, dashboard charts
+
+### Added
+- **`storage.rules`** — deny-all default. Firebase Storage was enabled on the project since setup but had no rules deployed, meaning it was live and unguarded; this closes that gap even though nothing in the app writes to Storage yet (Phase 8 will be the first). Wired into `firebase.json`. Commented guidance included for the admin-gated pattern to follow once Phase 8 needs it.
+- **`src/app/error.tsx`** — styled to match the existing card/design-token system, "Try again" (`reset()`) and a link to the dashboard. Replaces Next's generic error screen.
+- **`src/app/not-found.tsx`** — same visual treatment, links to the leaderboard and dashboard. Replaces Next's generic 404 screen. Confirmed via live test: custom page renders, not the generic "This page could not be found."
+- **Dashboard charts** (`components/dashboard/TopPerformersChart.tsx`, `ScoreDistributionChart.tsx`) — Recharts, wrapped in `ResponsiveContainer` for mobile. Top Performers: horizontal bar, top 5 by score. Score Distribution: bar chart of counts per status band, reusing the same `computeStatus()` bands used everywhere else in the app.
+- `scripts/verify-phase6-dashboard.ts` — confirms the dashboard renders both charts against a real session, no error overlay.
+
+### Changed
+- **`(admin)/dashboard/page.tsx` — replaced 4 separate Firestore aggregate queries with a single document fetch.** The previous version ran `count()`, `average()`, `orderBy desc limit 1`, and `orderBy asc limit 1` as four separate queries. Since the new charts need per-document data regardless, the page now does one `orderBy("score", "desc")` fetch of active interns and derives total/average/highest/lowest **and** both charts' data from that single result set in JS. Net effect: same stat cards, two new charts, fewer round trips — not more reads for the new features, per the "no unnecessary reads" requirement.
+- `docs/SETUP.md` step 8 — deploy command now includes `storage`: `firebase deploy --only firestore:rules,firestore:indexes,storage`.
+
+### Verified
+- `npx tsc --noEmit` — zero errors.
+- `npm run build` — passes completely, 13 routes (now including a real `/_not-found`), zero errors.
+- Custom 404 page confirmed live (not Next's generic "This page could not be found").
+- Dashboard confirmed rendering both charts against a real authenticated session, no error overlay.
+- No new Firestore indexes required — the dashboard's single query uses the same `isDeleted ASC + score DESC` composite index already deployed for the leaderboard.
+
+---
+
 ## [2026-07-09] — Phase 5 complete: Score Management, verified end-to-end
 
 ### Context

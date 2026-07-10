@@ -1,26 +1,50 @@
 import { redirect } from "next/navigation";
-import { AggregateField } from "firebase-admin/firestore";
-import { verifySession } from "@/lib/firebase/session";
 import { adminDb } from "@/lib/firebase/admin";
+import { verifySession } from "@/lib/firebase/session";
+import { computeStatus, type Status } from "@/types/firestore";
 import StatCard from "@/components/dashboard/StatCard";
+import TopPerformersChart from "@/components/dashboard/TopPerformersChart";
+import ScoreDistributionChart from "@/components/dashboard/ScoreDistributionChart";
+
+const STATUS_ORDER: Status[] = ["Excellent", "Good", "Average", "Needs Improvement"];
 
 export default async function DashboardPage() {
   const session = await verifySession();
   if (!session) redirect("/login");
 
-  const activeInterns = adminDb.collection("interns").where("isDeleted", "==", false);
+  // Single query powers the stat cards AND both charts below — replaces
+  // the previous 4 separate aggregate queries. The charts need per-document
+  // data regardless, so fetching once and deriving everything in JS avoids
+  // paying for aggregate queries on top of a full fetch. See Phase 6 notes
+  // in CHANGELOG.md.
+  const snap = await adminDb
+    .collection("interns")
+    .where("isDeleted", "==", false)
+    .orderBy("score", "desc")
+    .get();
 
-  const [countSnap, avgSnap, highestSnap, lowestSnap] = await Promise.all([
-    activeInterns.count().get(),
-    activeInterns.aggregate({ avgScore: AggregateField.average("score") }).get(),
-    activeInterns.orderBy("score", "desc").limit(1).get(),
-    activeInterns.orderBy("score", "asc").limit(1).get(),
-  ]);
+  const scores = snap.docs.map((doc) => ({
+    name: doc.data().fullName as string,
+    score: doc.data().score as number,
+  }));
 
-  const totalInterns = countSnap.data().count;
-  const averageScore = Math.round(((avgSnap.data().avgScore as number) || 0) * 10) / 10;
-  const highestScore = highestSnap.docs[0]?.data().score ?? "—";
-  const lowestScore = lowestSnap.docs[0]?.data().score ?? "—";
+  const totalInterns = scores.length;
+  const averageScore =
+    totalInterns === 0
+      ? 0
+      : Math.round((scores.reduce((sum, s) => sum + s.score, 0) / totalInterns) * 10) / 10;
+  const highestScore = scores[0]?.score ?? "—";
+  const lowestScore = scores[scores.length - 1]?.score ?? "—";
+
+  const topPerformers = scores.slice(0, 5).map((s) => ({
+    name: s.name.length > 14 ? `${s.name.slice(0, 13)}…` : s.name,
+    score: s.score,
+  }));
+
+  const distribution = STATUS_ORDER.map((status) => ({
+    status,
+    count: scores.filter((s) => computeStatus(s.score) === status).length,
+  }));
 
   return (
     <main className="container-fluid py-4 px-4">
@@ -34,6 +58,25 @@ export default async function DashboardPage() {
         <StatCard label="Average Score" value={averageScore} icon="📊" tone="success" />
         <StatCard label="Highest Score" value={highestScore} icon="🏆" tone="warning" />
         <StatCard label="Lowest Score" value={lowestScore} icon="📉" tone="danger" />
+      </div>
+
+      <div className="row g-3 mb-4">
+        <div className="col-12 col-lg-6">
+          <div className="card h-100">
+            <div className="card-body">
+              <h2 className="h6 fw-bold mb-3">Top Performers</h2>
+              <TopPerformersChart data={topPerformers} />
+            </div>
+          </div>
+        </div>
+        <div className="col-12 col-lg-6">
+          <div className="card h-100">
+            <div className="card-body">
+              <h2 className="h6 fw-bold mb-3">Score Distribution</h2>
+              <ScoreDistributionChart data={distribution} />
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="card">
