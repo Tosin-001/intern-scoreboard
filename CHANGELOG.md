@@ -4,6 +4,31 @@ All notable changes to this project are logged here.
 
 ---
 
+## [2026-07-11] — Phase 8: CSV export (revised scope — no PDF, no new API routes)
+
+### Context
+- Original Phase 8 plan (CSV/Excel/PDF via a server-side `/api/reports/[format]` route) was revised after discussion: PDF deferred as genuinely non-trivial rather than stretched to fit "if simple," and the whole approach simplified to pure client-side CSV generation with page-local filters, since exports needed to "respect current search/filter selections" scoped to the Reports page itself rather than shared global state.
+
+### Added
+- **`src/lib/utils/csv.ts`** — `toCsv()` (RFC 4180 field escaping) and `downloadCsv()` (Blob + anchor-click trigger, UTF-8 BOM so Excel opens accented names correctly). Pure client-side, no server involvement.
+- **`(admin)/reports` rebuilt** (was a Phase 6 stub) with two independent export sections:
+  - **All Interns** — search (name/department) + department dropdown, mirroring `/interns`'s Phase 7 filters exactly.
+  - **Leaderboard Rankings** — search (name) + department dropdown + Top 10 toggle, mirroring the public leaderboard's Phase 7 filters exactly.
+  - Both show a live "Exporting N of M interns" count and export the same 6-column format: Rank, Name, Email, Department, Score, Status. Rank is always the intern's true overall rank among active interns — filters only decide inclusion, never renumber, same rule Phase 7 established.
+- `src/components/reports/{AllInternsExportCard,LeaderboardExportCard}.tsx`.
+
+### Explicitly not built (per revised plan)
+- PDF export — assessed honestly as a real chunk of new work (a `@react-pdf/renderer` document definition plus either a server route or heavier client bundle), not something to bundle in under "unless simple." File/component structure here would make adding it later straightforward if wanted.
+- Excel (`.xlsx`) — dropped from the original plan when scope was revised to CSV-only.
+- Any new API route — the page does one `GET /api/interns` call (already existed) and does everything else (filtering, ranking, CSV generation) client-side.
+
+### Verified
+- `npx tsc --noEmit` — zero errors.
+- `npm run build` — exit code 0. **Confirmed no new API routes**: the built route list is identical to before this phase (`api/auth/session`, `api/interns`, `api/interns/[id]`, `api/scores/bulk`, `api/scores/history`) — `/reports` itself grew from a stub to 2.15 kB with no new server route.
+- No new Firestore reads — the page's one `GET /api/interns` call is reused by both export cards; filtering and CSV generation happen entirely in memory.
+
+---
+
 ## [2026-07-10] — Phase 7: Search & filter, client-side only
 
 ### Added

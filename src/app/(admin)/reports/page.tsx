@@ -1,23 +1,73 @@
-import { redirect } from "next/navigation";
-import { verifySession } from "@/lib/firebase/session";
+"use client";
 
-export default async function ReportsPage() {
-  const session = await verifySession();
-  if (!session) redirect("/login");
+import { useEffect, useState, useMemo } from "react";
+import type { InternRecord } from "@/lib/actions/interns";
+import Spinner from "@/components/shared/Spinner";
+import EmptyState from "@/components/shared/EmptyState";
+import AllInternsExportCard, {
+  type RankedIntern,
+} from "@/components/reports/AllInternsExportCard";
+import LeaderboardExportCard from "@/components/reports/LeaderboardExportCard";
+
+export default function ReportsPage() {
+  const [interns, setInterns] = useState<InternRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Single fetch, reused by both export cards below — no per-filter or
+    // per-export Firestore reads, per the "no unnecessary reads" rule
+    // carried through every prior phase.
+    fetch("/api/interns")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load interns.");
+        return res.json();
+      })
+      .then((body) => setInterns(body.interns))
+      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load interns."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Ranked once here, shared by both cards below — rank always reflects
+  // true overall standing among active interns, same rule Phase 7 uses.
+  const rankedInterns: RankedIntern[] = useMemo(() => {
+    return interns
+      .filter((i) => !i.isDeleted)
+      .sort((a, b) => b.score - a.score)
+      .map((i, index) => ({
+        id: i.id,
+        fullName: i.fullName,
+        email: i.email,
+        department: i.department,
+        score: i.score,
+        rank: index + 1,
+      }));
+  }, [interns]);
 
   return (
     <main className="container-fluid py-4 px-4">
-      <h1 className="h3 fw-bold mb-1">Reports</h1>
-      <p className="text-muted-2 mb-4">CSV, Excel, and PDF export.</p>
-      <div className="card">
-        <div className="card-body text-center py-5">
-          <div className="fs-1 mb-3">📄</div>
-          <h2 className="h6 fw-bold mb-1">Coming in Phase 8</h2>
-          <p className="text-muted-2 small mb-0">
-            Export functionality is planned but not yet built — see PROJECT_STATUS.md.
-          </p>
-        </div>
+      <div className="mb-4">
+        <h1 className="h3 fw-bold mb-1">Reports</h1>
+        <p className="text-muted-2 mb-0">Export intern and leaderboard data to CSV.</p>
       </div>
+
+      {loading && <Spinner label="Loading data…" />}
+      {error && <div className="alert alert-danger">{error}</div>}
+
+      {!loading && !error && rankedInterns.length === 0 && (
+        <EmptyState
+          icon="📄"
+          title="Nothing to export yet"
+          description="Add interns first, then come back here to export reports."
+        />
+      )}
+
+      {!loading && !error && rankedInterns.length > 0 && (
+        <div className="d-flex flex-column gap-3">
+          <AllInternsExportCard interns={rankedInterns} />
+          <LeaderboardExportCard interns={rankedInterns} />
+        </div>
+      )}
     </main>
   );
 }
