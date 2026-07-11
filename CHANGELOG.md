@@ -4,6 +4,20 @@ All notable changes to this project are logged here.
 
 ---
 
+## [2026-07-11] — Phase 8 enhancement: multi-select CSV export
+
+### Added
+- **`src/components/reports/SelectableInternsTable.tsx`** — shared table (checkbox column + select-all header checkbox + Rank/Name/Email/Department/Score/Status), used by both export cards.
+- **Row selection in both `AllInternsExportCard` and `LeaderboardExportCard`**: checkbox per row, "select all" toggles all currently-filtered rows, live selected count shown alongside the existing filtered count, new "Export Selected CSV" button next to the existing "Export CSV" (which continues exporting all currently-filtered rows, unchanged).
+- **Selection scoping decision:** selection is scoped to whatever's currently filtered. If a filter changes and previously-selected rows fall out of view, they no longer count toward the visible selected count and won't be included in "Export Selected" — keeps behavior consistent with "exports respect current filters."
+
+### Verified
+- `npx tsc --noEmit` — zero errors.
+- `npm run build` — exit code 0. **No new API routes** — route table identical to the previous Phase 8 entry. `/reports` grew from 2.15 kB → 2.85 kB (new table/selection UI only).
+- No new Firestore reads — selection and both export paths operate entirely on the `filtered` array already computed in each card from the single `GET /api/interns` call made on page load.
+
+---
+
 ## [2026-07-11] — Phase 8: CSV export (revised scope — no PDF, no new API routes)
 
 ### Context
