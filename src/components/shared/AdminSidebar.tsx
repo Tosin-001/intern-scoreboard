@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LogoutButton from "./LogoutButton";
+import { IconDashboard, IconInterns, IconScores, IconReports } from "./icons";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: "📊" },
-  { href: "/interns", label: "Interns", icon: "🧑‍💻" },
-  { href: "/scores", label: "Scores", icon: "🎯" },
-  { href: "/reports", label: "Reports", icon: "📄" },
+  { href: "/dashboard", label: "Dashboard", Icon: IconDashboard },
+  { href: "/interns", label: "Interns", Icon: IconInterns },
+  { href: "/scores", label: "Scores", Icon: IconScores },
+  { href: "/reports", label: "Reports", Icon: IconReports },
 ];
 
 export default function AdminSidebar() {
@@ -28,7 +29,7 @@ export default function AdminSidebar() {
             href={item.href}
             className={`sidebar-link ${pathname?.startsWith(item.href) ? "active" : ""}`}
           >
-            <span>{item.icon}</span>
+            <item.Icon />
             <span>{item.label}</span>
           </Link>
         ))}

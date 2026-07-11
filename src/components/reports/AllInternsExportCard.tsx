@@ -26,6 +26,7 @@ function rowsToCsv(rows: RankedIntern[]): string {
 export default function AllInternsExportCard({ interns }: { interns: RankedIntern[] }) {
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("");
+  const [top10Only, setTop10Only] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const departments = useMemo(
@@ -35,6 +36,7 @@ export default function AllInternsExportCard({ interns }: { interns: RankedInter
 
   const filtered = useMemo(() => {
     return interns
+      .filter((i) => (top10Only ? i.rank <= 10 : true))
       .filter((i) => (department ? i.department === department : true))
       .filter((i) =>
         search.trim() === ""
@@ -42,7 +44,7 @@ export default function AllInternsExportCard({ interns }: { interns: RankedInter
           : i.fullName.toLowerCase().includes(search.trim().toLowerCase()) ||
             i.department.toLowerCase().includes(search.trim().toLowerCase())
       );
-  }, [interns, search, department]);
+  }, [interns, search, department, top10Only]);
 
   // Selection is scoped to whatever's currently filtered — rows selected
   // earlier that have since fallen out of the filter don't count toward
@@ -73,27 +75,25 @@ export default function AllInternsExportCard({ interns }: { interns: RankedInter
 
   function handleExportAll() {
     const date = new Date().toISOString().slice(0, 10);
-    downloadCsv(`intern-scoreboard-all-interns-${date}.csv`, rowsToCsv(filtered));
+    const suffix = top10Only ? "-top10" : "";
+    downloadCsv(`intern-scoreboard-interns${suffix}-${date}.csv`, rowsToCsv(filtered));
   }
 
   function handleExportSelected() {
     const date = new Date().toISOString().slice(0, 10);
-    downloadCsv(
-      `intern-scoreboard-all-interns-selected-${date}.csv`,
-      rowsToCsv(selectedInFiltered)
-    );
+    downloadCsv(`intern-scoreboard-interns-selected-${date}.csv`, rowsToCsv(selectedInFiltered));
   }
 
   return (
     <div className="card">
       <div className="card-body">
-        <h2 className="h6 fw-bold mb-1">All Interns</h2>
+        <h2 className="h6 fw-bold mb-1">Export Interns</h2>
         <p className="text-muted-2 small mb-3">
-          Full intern roster, respecting the search and department filters below.
+          Search, filter, and select interns to export as CSV.
         </p>
 
-        <div className="row g-2 mb-3">
-          <div className="col-12 col-md-7">
+        <div className="row g-2 mb-3 align-items-center">
+          <div className="col-12 col-md-5">
             <input
               type="search"
               className="form-control form-control-sm"
@@ -102,7 +102,7 @@ export default function AllInternsExportCard({ interns }: { interns: RankedInter
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className="col-12 col-md-5">
+          <div className="col-8 col-md-4">
             <select
               className="form-select form-select-sm"
               value={department}
@@ -115,6 +115,21 @@ export default function AllInternsExportCard({ interns }: { interns: RankedInter
                 </option>
               ))}
             </select>
+          </div>
+          <div className="col-4 col-md-3 d-flex align-items-center">
+            <div className="form-check form-switch mb-0">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                role="switch"
+                id="reportTop10Toggle"
+                checked={top10Only}
+                onChange={(e) => setTop10Only(e.target.checked)}
+              />
+              <label className="form-check-label small" htmlFor="reportTop10Toggle">
+                Top 10 only
+              </label>
+            </div>
           </div>
         </div>
 

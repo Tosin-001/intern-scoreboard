@@ -7,7 +7,6 @@ import EmptyState from "@/components/shared/EmptyState";
 import AllInternsExportCard, {
   type RankedIntern,
 } from "@/components/reports/AllInternsExportCard";
-import LeaderboardExportCard from "@/components/reports/LeaderboardExportCard";
 
 export default function ReportsPage() {
   const [interns, setInterns] = useState<InternRecord[]>([]);
@@ -48,7 +47,7 @@ export default function ReportsPage() {
     <main className="container-fluid py-4 px-4">
       <div className="mb-4">
         <h1 className="h3 fw-bold mb-1">Reports</h1>
-        <p className="text-muted-2 mb-0">Export intern and leaderboard data to CSV.</p>
+        <p className="text-muted-2 mb-0">Export intern data to CSV.</p>
       </div>
 
       {loading && <Spinner label="Loading data…" />}
@@ -63,10 +62,7 @@ export default function ReportsPage() {
       )}
 
       {!loading && !error && rankedInterns.length > 0 && (
-        <div className="d-flex flex-column gap-3">
-          <AllInternsExportCard interns={rankedInterns} />
-          <LeaderboardExportCard interns={rankedInterns} />
-        </div>
+        <AllInternsExportCard interns={rankedInterns} />
       )}
     </main>
   );

@@ -4,6 +4,45 @@ All notable changes to this project are logged here.
 
 ---
 
+## [2026-07-11] — Mobile responsiveness audit + sidebar icon replacement
+
+### Audit method
+- No headless browser available in this environment, so the audit combined: (1) a direct check that the deployed HTML actually includes a viewport meta tag (confirmed present — `width=device-width, initial-scale=1`, ruling out the most common cause of this symptom), and (2) a line-by-line review of every screen (global layout, sidebar, dashboard, interns, scores, reports, all four tables, all filter bars, search inputs, export controls, cards, charts) for fixed-width elements that could exceed a phone's viewport.
+
+### Fixed
+- **Root cause (confirmed):** `(admin)/scores` bulk-update toolbar had an inner `d-flex gap-2` (mode `<select>` at fixed `width:130px` + value `<input>` at fixed `width:90px` + a button) with **no `flex-wrap`**, unlike its parent. Combined minimum width (~350–400px+) exceeded a phone's usable content width, forcing the row — and with it the page — wider than the viewport. Fixed: added `flex-wrap` to the inner row and switched the fixed widths to `minWidth` + `flex: 1 1 ...` so the controls can shrink and wrap instead of forcing overflow.
+- **Structural hardening:** added `overflow-x: hidden` to `html`/`body` in `globals.css`. Every real table in the app was already correctly wrapped in `.table-responsive` (verified on all four — leaderboard, interns, scores, reports selection table), so this is a safety net for anything the manual review might have missed, not a sign those tables were broken.
+- **Public leaderboard podium** (`(public)/page.tsx`): was `col-4 col-4 col-4` with no breakpoint variation — never stacked, always crammed 3-across even at 320px. Changed to `col-12 col-sm-4` so it stacks to one column below the `sm` breakpoint (576px) and goes 3-across above it.
+
+### Changed — sidebar icon set
+- Replaced emoji icons (📊🧑‍💻🎯📄🚪) with 5 hand-written inline SVG icons (`src/components/shared/icons.tsx`) — 20px, `stroke="currentColor"`, consistent line-icon style. No new npm dependency, matching the project's established preference for lightweight alternatives over new libraries.
+- Fixes a small pre-existing inconsistency: `.sidebar-link`'s hover/active states transition text `color`, but emoji don't respond to CSS `color` at all — icons and labels visually desynced slightly. SVG icons using `currentColor` now transition correctly with the label.
+- `AdminSidebar.tsx` and `LogoutButton.tsx` updated to use the new icons. `MobileTopBar.tsx` intentionally left as-is — it was already text-only with no reported issue there.
+
+### Verified
+- `npx tsc --noEmit` — exit code 0.
+- `npm run build` — exit code 0, all 13 routes generated, no new API routes.
+
+### Honest limitation
+- No real mobile browser or device emulator was available to visually confirm the fix end-to-end. The concrete bug found via code review is fixed and verified by build; the `overflow-x: hidden` addition is defense-in-depth for anything not caught by manual review. Recommend a real-device check before considering this fully closed.
+
+---
+
+## [2026-07-11] — Phase 8 simplification: single export interface
+
+### Changed
+- **Merged the two export sections into one.** The separate "Leaderboard Rankings" card is gone; its Top 10 toggle was folded into `AllInternsExportCard` (now titled "Export Interns" on the page), alongside the existing search, department filter, row selection, "Export CSV," and "Export Selected CSV." One export interface instead of two near-duplicate ones.
+- `(admin)/reports` intro copy updated to "Export intern data to CSV" (was "...intern and leaderboard data...").
+
+### Archived (not deleted)
+- `src/components/reports/LeaderboardExportCard.tsx` → `archive/phase8-leaderboard-export/LeaderboardExportCard.tsx.removed`, per project rules.
+
+### Verified
+- `npx tsc --noEmit` — zero errors.
+- `npm run build` — exit code 0.
+
+---
+
 ## [2026-07-11] — Phase 8 enhancement: multi-select CSV export
 
 ### Added

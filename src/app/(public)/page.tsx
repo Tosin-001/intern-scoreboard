@@ -162,11 +162,12 @@ export default function PublicLeaderboardPage() {
           <div className="row g-3 mb-4">
             {[podium[1], podium[0], podium[2]].map((entry, i) =>
               entry ? (
-                <div className="col-4" key={entry.id}>
+                <div className="col-12 col-sm-4" key={entry.id}>
                   <div
                     className="podium-card card text-center p-3 h-100"
-                    style={{ marginTop: i === 1 ? 0 : 24 }}
+                    style={{ marginTop: i === 1 ? 0 : undefined }}
                   >
+                    <div className="d-none d-sm-block" style={{ height: i === 1 ? 0 : 24 }} />
                     <div className="fs-2 mb-1">
                       {entry.rank === 1 ? "🥇" : entry.rank === 2 ? "🥈" : "🥉"}
                     </div>
@@ -181,7 +182,7 @@ export default function PublicLeaderboardPage() {
                   </div>
                 </div>
               ) : (
-                <div className="col-4" key={`empty-${i}`} />
+                <div className="col-12 col-sm-4" key={`empty-${i}`} />
               )
             )}
           </div>

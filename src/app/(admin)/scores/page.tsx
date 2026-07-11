@@ -152,10 +152,10 @@ export default function ScoresPage() {
                 <label className="form-label small fw-medium mb-1">
                   Bulk update ({selected.size} selected)
                 </label>
-                <div className="d-flex gap-2">
+                <div className="d-flex flex-wrap gap-2">
                   <select
                     className="form-select form-select-sm"
-                    style={{ width: 130 }}
+                    style={{ minWidth: 140, flex: "1 1 140px" }}
                     value={bulkMode}
                     onChange={(e) => setBulkMode(e.target.value as "delta" | "set")}
                   >
@@ -165,7 +165,7 @@ export default function ScoresPage() {
                   <input
                     type="number"
                     className="form-control form-control-sm"
-                    style={{ width: 90 }}
+                    style={{ minWidth: 80, flex: "1 1 80px" }}
                     value={bulkValue}
                     onChange={(e) => setBulkValue(e.target.value)}
                   />
