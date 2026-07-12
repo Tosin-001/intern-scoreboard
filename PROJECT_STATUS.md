@@ -10,11 +10,12 @@ _Last updated: 2026-07-11_
 - **Phase 10 (moved up ahead of schedule)** — **deployed to Vercel.** Admin login, dashboard, Firestore reads/writes, intern CRUD, score updates, and the public leaderboard all confirmed working in production. Vercel Analytics installed.
 - **Phase 7** — search + department filter on the public leaderboard, Top 10 toggle, department filter added to `(admin)/interns` alongside the existing search. All client-side, zero new Firestore reads. **Committed and pushed (`312ef51`), confirmed live in production.**
 - **Phase 8** — CSV export: single "Export Interns" card with search + department filter + Top 10 toggle + row selection + "Export CSV" (all filtered) / "Export Selected CSV". No PDF/Excel, no new API routes. Exports Rank/Name/Email/Department/Score/Status. **Committed and pushed (`e5d35ee`, `61d071f`).**
-- **Mobile responsiveness (2 audit passes) + sidebar icons** — round 1 fixed a confirmed bulk-toolbar overflow bug plus added global `overflow-x:hidden` hardening; deployed, tested on a real phone, still found real issues. Round 2 went structural: Scores and Interns tables now switch to mobile card views below `md` (44px+ touch targets, no more cramped `btn-sm` groups in a scrolling table), Reports table hides secondary columns on mobile, all filter bars fully stack below `sm`. Sidebar emoji replaced with 5 hand-written SVG icons (no new dependency). **Round 1 committed and pushed (`d925558`). Round 2 implemented and build-verified — not yet committed** (per instruction, awaiting review — recommend a real-device check before merging).
+- **Mobile responsiveness (2 audit passes) + sidebar icons** — round 1 fixed a confirmed bulk-toolbar overflow bug plus added global `overflow-x:hidden` hardening. Round 2 went structural after real-device testing found more: Scores and Interns tables switch to mobile card views below `md` (44px+ touch targets), Reports table hides secondary columns on mobile, all filter bars fully stack below `sm`. Sidebar emoji replaced with 5 hand-written SVG icons (no new dependency). **Both rounds committed and pushed (`d925558`, `8fc2446`).**
+- **Phase 9** — Score History UI. Dedicated `(admin)/history` page reusing the existing `GET /api/scores/history` endpoint as-is (no new API route, no schema change) — search by name, intern dropdown, date range, All/Increases/Decreases toggle, all client-side over one fetch. Extracted `ScoreHistoryRow`/`DeltaBadge` shared components, now used by both the History page and the Scores page's "Recent Score Changes" panel. Added a client-side search bar to the Scores page itself. Built mobile-first from the start. **Implemented and build-verified — not yet committed** (per instruction, awaiting review).
 - Full history preserved throughout: pre-migration/pre-refactor backups, archived Supabase and Cloud Functions implementations — nothing deleted, per project rules.
 
 ## 🔨 In Progress
-- Mobile audit round 2: implemented, `tsc`/build verified, awaiting your review + a real-device check before commit.
+- Phase 9 (Score History UI): implemented, `tsc`/build verified, awaiting your review before commit.
 
 ## 📋 Pending
 - [x] Phase 1–5: see CHANGELOG for full detail
@@ -23,8 +24,9 @@ _Last updated: 2026-07-11_
 - [x] Phase 7: Search/filter — committed, pushed, confirmed live
 - [x] Phase 8: CSV export — committed, pushed
 - [x] Mobile responsiveness round 1 + sidebar icons — committed, pushed (`d925558`)
-- [x] Mobile responsiveness round 2 (structural card views) — implemented, build-verified, **not yet committed**
-- [ ] Phase 9: Further polish — dark mode (bonus), animation pass, error monitoring (Sentry or equivalent), PDF export (deferred from Phase 8, could land here if wanted)
+- [x] Mobile responsiveness round 2 (structural card views) — committed, pushed (`8fc2446`)
+- [x] Phase 9: Score History UI — implemented, build-verified, **not yet committed**
+- [ ] Further polish — dark mode (bonus), animation pass, error monitoring (Sentry or equivalent), PDF export (deferred from Phase 8, could land here if wanted)
 
 ## ⚠️ Known Issues / Risks
 

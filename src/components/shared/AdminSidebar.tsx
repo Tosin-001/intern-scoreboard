@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LogoutButton from "./LogoutButton";
-import { IconDashboard, IconInterns, IconScores, IconReports } from "./icons";
+import { IconDashboard, IconInterns, IconScores, IconHistory, IconReports } from "./icons";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", Icon: IconDashboard },
   { href: "/interns", label: "Interns", Icon: IconInterns },
   { href: "/scores", label: "Scores", Icon: IconScores },
+  { href: "/history", label: "History", Icon: IconHistory },
   { href: "/reports", label: "Reports", Icon: IconReports },
 ];
 

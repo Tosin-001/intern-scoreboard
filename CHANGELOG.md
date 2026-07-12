@@ -4,6 +4,31 @@ All notable changes to this project are logged here.
 
 ---
 
+## [2026-07-11] — Phase 9: Score History UI
+
+### Note on how this entry came about
+- On starting this phase, the implementation was found already substantially built in the working tree (uncommitted, untracked) — likely from direct edits between sessions. Rather than redoing it blindly, every file was read in full and checked against all 9 requirements before running verification. Everything checked out correct and complete; no rewrite was needed, only verification.
+
+### Zero schema changes
+- Confirmed before writing any code: `getRecentScoreHistory()` already returns every field this phase needed (`internName` denormalized at write time, `oldScore`/`newScore`, `updatedBy`, `updatedAt`), and `GET /api/scores/history?limit=N` already supports up to 100 entries. This phase is entirely new UI over existing data — no new Firestore collection, no new field, no new API route.
+
+### Added
+- **`(admin)/history` page** — dedicated Score History view. Single `GET /api/scores/history?limit=100` call on load; every filter below operates client-side over that one result set.
+  - Search by intern name, an intern dropdown (options derived from the fetched history itself — no second call to `/api/interns` just to populate a filter), date range (from/to against `updatedAt`), and an All/Increases/Decreases toggle.
+  - Desktop: table (Intern, Old→New, Delta, Updated By, When). Mobile: cards, built mobile-first from the start (not retrofitted) using the new shared row component.
+  - "Updated By" shows "Admin" when `updatedBy` is present, "—" otherwise — `scoreHistory` stores an admin UID, not an email, and with a single-admin app there's no need to expose a raw UID in the UI. Noting this as a deliberate display choice, not a data gap.
+- **`src/components/history/ScoreHistoryRow.tsx`** + **`DeltaBadge.tsx`** — shared components. `ScoreHistoryRow` (`compact`/`card` variants) is now used by both the Scores page's "Recent Score Changes" panel and the History page's mobile card view; `DeltaBadge` is shared across the Scores panel, History page mobile cards, and History page desktop table.
+- **`formatFullDateTime()`** added to `lib/utils/time.ts` alongside the existing `timeAgo()` — history entries show both relative and full date/time per the requirement.
+- **Search bar on the Scores page** — filters the already-loaded intern list by name, client-side only, affecting both the desktop table and mobile card view. Zero new Firestore reads; "select all" now scopes to the currently-filtered set, consistent with the pattern established in Reports/Interns/Leaderboard.
+- **"View All History →" link** on the Scores page's Recent Score Changes panel, pointing to the new page.
+- `IconHistory` added to `icons.tsx` (clock/history line icon, same style as the existing 5). `/history` added to `middleware.ts`'s protected-route matcher, `AdminSidebar`, and `MobileTopBar`.
+
+### Verified
+- `npx tsc --noEmit` — exit code 0.
+- `npm run build` — exit code 0. `/history` present (2.37 kB), `/scores` grew to 3.35 kB (search bar + refactor). **No new API routes** — same 6 as before.
+
+---
+
 ## [2026-07-11] — Mobile-first audit round 2: structural fixes, not just CSS tweaks
 
 ### Context

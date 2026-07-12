@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import type { InternRecord } from "@/lib/actions/interns";
 import type { ScoreHistoryEntry } from "@/lib/actions/scores";
-import { timeAgo } from "@/lib/utils/time";
 import Spinner from "@/components/shared/Spinner";
 import EmptyState from "@/components/shared/EmptyState";
+import ScoreHistoryRow from "@/components/history/ScoreHistoryRow";
 
 function clampScore(n: number): number {
   return Math.max(0, Math.min(100, Math.round(n)));
@@ -23,6 +23,15 @@ export default function ScoresPage() {
   const [bulkValue, setBulkValue] = useState("5");
   const [bulkSubmitting, setBulkSubmitting] = useState(false);
   const [bulkMessage, setBulkMessage] = useState<string | null>(null);
+  const [internSearch, setInternSearch] = useState("");
+
+  // Client-side only — filters the interns list already loaded via
+  // loadData() below. No new Firestore reads for typing in this box.
+  const visibleInterns = useMemo(() => {
+    const term = internSearch.trim().toLowerCase();
+    if (!term) return interns;
+    return interns.filter((i) => i.fullName.toLowerCase().includes(term));
+  }, [interns, internSearch]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -87,7 +96,9 @@ export default function ScoresPage() {
 
   function toggleSelectAll() {
     setSelected((prev) =>
-      prev.size === interns.length ? new Set() : new Set(interns.map((i) => i.id))
+      visibleInterns.every((i) => prev.has(i.id))
+        ? new Set(Array.from(prev).filter((id) => !visibleInterns.some((i) => i.id === id)))
+        : new Set([...prev, ...visibleInterns.map((i) => i.id)])
     );
   }
 
@@ -146,6 +157,20 @@ export default function ScoresPage() {
 
       {!loading && interns.length > 0 && (
         <div className="card mb-3">
+          <div className="card-body py-2">
+            <input
+              type="search"
+              className="form-control form-control-sm"
+              placeholder="Search by intern name…"
+              value={internSearch}
+              onChange={(e) => setInternSearch(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
+
+      {!loading && interns.length > 0 && (
+        <div className="card mb-3">
           <div className="card-body">
             <div className="d-flex flex-wrap align-items-end gap-2">
               <div>
@@ -188,7 +213,11 @@ export default function ScoresPage() {
         <EmptyState icon="🧑‍💻" title="No interns yet" description="Add interns first, then adjust scores here." />
       )}
 
-      {!loading && interns.length > 0 && (
+      {!loading && interns.length > 0 && visibleInterns.length === 0 && (
+        <EmptyState icon="🔍" title="No matching interns" description="Try a different search term." />
+      )}
+
+      {!loading && visibleInterns.length > 0 && (
         <div className="row g-3">
           <div className="col-12 col-lg-8">
             {/* Desktop/tablet: table. Hidden below md — see card list below. */}
@@ -201,7 +230,7 @@ export default function ScoresPage() {
                         <input
                           type="checkbox"
                           className="form-check-input"
-                          checked={selected.size === interns.length && interns.length > 0}
+                          checked={visibleInterns.length > 0 && visibleInterns.every((i) => selected.has(i.id))}
                           onChange={toggleSelectAll}
                         />
                       </th>
@@ -212,7 +241,7 @@ export default function ScoresPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {interns.map((intern) => (
+                    {visibleInterns.map((intern) => (
                       <tr key={intern.id}>
                         <td>
                           <input
@@ -279,7 +308,7 @@ export default function ScoresPage() {
                 buttons are full touch-target size (44px+) in a 2x2 grid,
                 not squeezed into a table cell. */}
             <div className="d-md-none d-flex flex-column gap-2">
-              {interns.map((intern) => (
+              {visibleInterns.map((intern) => (
                 <div className="card" key={intern.id}>
                   <div className="card-body">
                     <div className="d-flex justify-content-between align-items-start mb-2">
@@ -360,27 +389,19 @@ export default function ScoresPage() {
           <div className="col-12 col-lg-4">
             <div className="card">
               <div className="card-body">
-                <h2 className="h6 fw-bold mb-3">Recent Score Changes</h2>
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <h2 className="h6 fw-bold mb-0">Recent Score Changes</h2>
+                  <a href="/history" className="small">
+                    View All History →
+                  </a>
+                </div>
                 {history.length === 0 && (
                   <p className="text-muted-2 small mb-0">No score changes yet.</p>
                 )}
                 <div className="d-flex flex-column gap-3">
-                  {history.map((entry) => {
-                    const increased = entry.newScore > entry.oldScore;
-                    return (
-                      <div key={entry.id} className="d-flex justify-content-between align-items-start">
-                        <div>
-                          <div className="fw-medium small">{entry.internName}</div>
-                          <div className="text-muted-2" style={{ fontSize: "0.75rem" }}>
-                            {entry.oldScore} → {entry.newScore} · {timeAgo(entry.updatedAt)}
-                          </div>
-                        </div>
-                        <span className={`badge ${increased ? "bg-success-subtle text-success-emphasis" : "bg-danger-subtle text-danger-emphasis"}`}>
-                          {increased ? "+" : ""}{entry.newScore - entry.oldScore}
-                        </span>
-                      </div>
-                    );
-                  })}
+                  {history.map((entry) => (
+                    <ScoreHistoryRow key={entry.id} entry={entry} variant="compact" />
+                  ))}
                 </div>
               </div>
             </div>

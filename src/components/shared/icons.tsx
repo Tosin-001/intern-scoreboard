@@ -64,3 +64,13 @@ export function IconLogout({ size = 20, className }: IconProps) {
     </svg>
   );
 }
+
+export function IconHistory({ size = 20, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M3 12a9 9 0 1 0 2.6-6.3" />
+      <path d="M3 5v4h4" />
+      <path d="M12 7v5l3.5 2" />
+    </svg>
+  );
+}

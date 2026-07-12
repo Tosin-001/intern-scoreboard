@@ -11,3 +11,15 @@ export function timeAgo(isoString: string | null): string {
   if (days < 30) return `${days}d ago`;
   return new Date(isoString).toLocaleDateString();
 }
+
+/** Full date + time for display alongside the relative timeAgo() string. */
+export function formatFullDateTime(isoString: string | null): string {
+  if (!isoString) return "—";
+  return new Date(isoString).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
