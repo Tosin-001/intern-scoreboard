@@ -191,7 +191,8 @@ export default function ScoresPage() {
       {!loading && interns.length > 0 && (
         <div className="row g-3">
           <div className="col-12 col-lg-8">
-            <div className="card">
+            {/* Desktop/tablet: table. Hidden below md — see card list below. */}
+            <div className="card d-none d-md-block">
               <div className="table-responsive">
                 <table className="table table-clean mb-0">
                   <thead>
@@ -272,6 +273,87 @@ export default function ScoresPage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+
+            {/* Mobile: stacked cards instead of a cramped table. Quick-adjust
+                buttons are full touch-target size (44px+) in a 2x2 grid,
+                not squeezed into a table cell. */}
+            <div className="d-md-none d-flex flex-column gap-2">
+              {interns.map((intern) => (
+                <div className="card" key={intern.id}>
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <div className="d-flex align-items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="form-check-input mt-0"
+                          checked={selected.has(intern.id)}
+                          onChange={() => toggleSelect(intern.id)}
+                          aria-label={`Select ${intern.fullName}`}
+                        />
+                        <div>
+                          <div className="fw-medium">{intern.fullName}</div>
+                          <div className="text-muted-2 small">{intern.department}</div>
+                        </div>
+                      </div>
+                      <input
+                        type="number"
+                        className="form-control form-control-sm text-center"
+                        style={{ width: 70 }}
+                        defaultValue={intern.score}
+                        key={intern.score}
+                        min={0}
+                        max={100}
+                        disabled={savingId === intern.id}
+                        onBlur={(e) => setExactScore(intern, e.target.value)}
+                        aria-label={`Score for ${intern.fullName}`}
+                      />
+                    </div>
+                    <div className="row g-2">
+                      <div className="col-3">
+                        <button
+                          className="btn btn-outline-secondary w-100"
+                          style={{ minHeight: 44 }}
+                          disabled={savingId === intern.id}
+                          onClick={() => adjustScore(intern, -5)}
+                        >
+                          −5
+                        </button>
+                      </div>
+                      <div className="col-3">
+                        <button
+                          className="btn btn-outline-secondary w-100"
+                          style={{ minHeight: 44 }}
+                          disabled={savingId === intern.id}
+                          onClick={() => adjustScore(intern, -1)}
+                        >
+                          −1
+                        </button>
+                      </div>
+                      <div className="col-3">
+                        <button
+                          className="btn btn-outline-secondary w-100"
+                          style={{ minHeight: 44 }}
+                          disabled={savingId === intern.id}
+                          onClick={() => adjustScore(intern, 1)}
+                        >
+                          +1
+                        </button>
+                      </div>
+                      <div className="col-3">
+                        <button
+                          className="btn btn-outline-secondary w-100"
+                          style={{ minHeight: 44 }}
+                          disabled={savingId === intern.id}
+                          onClick={() => adjustScore(intern, 5)}
+                        >
+                          +5
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

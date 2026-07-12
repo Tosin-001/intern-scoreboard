@@ -4,6 +4,34 @@ All notable changes to this project are logged here.
 
 ---
 
+## [2026-07-11] — Mobile-first audit round 2: structural fixes, not just CSS tweaks
+
+### Context
+- The previous pass's fixes were confirmed deployed and live (`d925558`), so this was a genuinely deeper problem, not a deployment gap. Audited systematically this time — grepped every `.tsx` file under `src/` for fixed-width patterns rather than spot-checking from memory, then read every flagged file in full.
+
+### Root cause this time: technically-contained ≠ actually usable
+- The Scores and Interns tables were correctly wrapped in `.table-responsive` (no page-level overflow — the previous audit's finding was accurate as far as it went), but that's not the same as being usable on a phone. The Scores table's quick-adjust buttons (−5/−1/+1/+5) were ~32px each inside a 5-column table needing internal horizontal scroll — below the 44px touch-target guideline and exactly the kind of thing that feels like "I need to zoom in to hit the right button" even without literal page overflow.
+
+### Fixed
+- **`(admin)/scores/page.tsx`** — table now `d-none d-md-block` (desktop/tablet only). Added a mobile-only (`d-md-none`) stacked card list: each intern gets a card with checkbox+name+department, a direct-entry score input, and quick-adjust buttons in a 2×2 grid at full 44px+ touch-target height.
+- **`(admin)/interns/page.tsx`** — same pattern: table `d-none d-md-block`, mobile card list with full-width Edit/Remove buttons (44px+ height) instead of cramped `btn-sm` pair.
+- **`components/reports/SelectableInternsTable.tsx`** — Email and Department columns hidden below `md` (`d-none d-md-table-cell`) to reduce table width on mobile; Rank/Name/Score/Status/checkbox remain, core functionality intact.
+- **Filter bars** (`AllInternsExportCard.tsx`, public leaderboard `(public)/page.tsx`) — department dropdown and Top 10 toggle were sharing a row via `col-8`/`col-4` even at 320px. Changed to `col-12 col-sm-6 col-md-X` so they fully stack below the `sm` breakpoint (576px) instead of cramming two controls into a narrow phone width.
+
+### Reviewed, no change needed
+- `AdminSidebar.tsx`'s fixed `width:240` — re-verified twice this session; correctly hidden via `d-none d-md-flex` below the `md` breakpoint, confirmed via the layout structure in `(admin)/layout.tsx`. Not a bug.
+- `Modal.tsx`, login page, `StatCard.tsx`, `TopPerformersChart.tsx` — all use `max-width` (not fixed min-width) or Recharts' `ResponsiveContainer`, correctly responsive.
+- Global `overflow-x: hidden` and the Scores bulk-toolbar `flex-wrap` fix from the previous pass — both confirmed still intact and correct.
+
+### Verified
+- `npx tsc --noEmit` — exit code 0.
+- `npm run build` — exit code 0, all 13 routes generated, no new API routes. `interns` 3.04→3.18 kB, `scores` 2.68→2.87 kB (card-view markup).
+
+### Honest limitation, unchanged from last time
+- Still no real device/browser available in this environment to visually confirm. This pass went further than CSS tweaks — actual structural mobile layouts (card views replacing tables) — specifically because the previous "not technically overflowing" reasoning wasn't good enough. Recommend a real-device check before considering this closed.
+
+---
+
 ## [2026-07-11] — Mobile responsiveness audit + sidebar icon replacement
 
 ### Audit method

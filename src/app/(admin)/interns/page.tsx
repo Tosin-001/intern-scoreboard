@@ -133,49 +133,89 @@ export default function InternsPage() {
       )}
 
       {!loading && !error && visibleInterns.length > 0 && (
-        <div className="card">
-          <div className="table-responsive">
-            <table className="table table-clean mb-0">
-              <thead>
-                <tr>
-                  <th scope="col">Name</th>
-                  <th scope="col">Email</th>
-                  <th scope="col">Department</th>
-                  <th scope="col">Score</th>
-                  <th scope="col">Status</th>
-                  <th scope="col" className="text-end">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visibleInterns.map((intern) => (
-                  <tr key={intern.id}>
-                    <td className="fw-medium">{intern.fullName}</td>
-                    <td className="text-muted-2">{intern.email}</td>
-                    <td>{intern.department}</td>
-                    <td className="fw-bold">{intern.score}</td>
-                    <td>
-                      <StatusBadge status={computeStatus(intern.score)} />
-                    </td>
-                    <td className="text-end">
-                      <button
-                        className="btn btn-outline-secondary btn-sm me-2"
-                        onClick={() => openEditModal(intern)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={() => setDeletingIntern(intern)}
-                      >
-                        Remove
-                      </button>
-                    </td>
+        <>
+          {/* Desktop/tablet: table. Hidden below md — see card list below. */}
+          <div className="card d-none d-md-block">
+            <div className="table-responsive">
+              <table className="table table-clean mb-0">
+                <thead>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Department</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" className="text-end">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {visibleInterns.map((intern) => (
+                    <tr key={intern.id}>
+                      <td className="fw-medium">{intern.fullName}</td>
+                      <td className="text-muted-2">{intern.email}</td>
+                      <td>{intern.department}</td>
+                      <td className="fw-bold">{intern.score}</td>
+                      <td>
+                        <StatusBadge status={computeStatus(intern.score)} />
+                      </td>
+                      <td className="text-end">
+                        <button
+                          className="btn btn-outline-secondary btn-sm me-2"
+                          onClick={() => openEditModal(intern)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={() => setDeletingIntern(intern)}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Mobile: stacked cards, full-width touch-friendly action buttons. */}
+          <div className="d-md-none d-flex flex-column gap-2">
+            {visibleInterns.map((intern) => (
+              <div className="card" key={intern.id}>
+                <div className="card-body">
+                  <div className="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                      <div className="fw-medium">{intern.fullName}</div>
+                      <div className="text-muted-2 small">{intern.email}</div>
+                      <div className="text-muted-2 small">{intern.department}</div>
+                    </div>
+                    <div className="text-end">
+                      <div className="fw-bold fs-5">{intern.score}</div>
+                      <StatusBadge status={computeStatus(intern.score)} />
+                    </div>
+                  </div>
+                  <div className="d-flex gap-2">
+                    <button
+                      className="btn btn-outline-secondary flex-fill"
+                      style={{ minHeight: 44 }}
+                      onClick={() => openEditModal(intern)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-outline-danger flex-fill"
+                      style={{ minHeight: 44 }}
+                      onClick={() => setDeletingIntern(intern)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       <InternFormModal

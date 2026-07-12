@@ -124,7 +124,7 @@ export default function PublicLeaderboardPage() {
                     onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
-                <div className="col-8 col-md-4">
+                <div className="col-12 col-sm-6 col-md-4">
                   <select
                     className="form-select"
                     value={department}
@@ -138,7 +138,7 @@ export default function PublicLeaderboardPage() {
                     ))}
                   </select>
                 </div>
-                <div className="col-4 col-md-3 d-flex align-items-center">
+                <div className="col-12 col-sm-6 col-md-3 d-flex align-items-center">
                   <div className="form-check form-switch mb-0">
                     <input
                       className="form-check-input"

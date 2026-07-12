@@ -39,8 +39,8 @@ export default function SelectableInternsTable({
             </th>
             <th>Rank</th>
             <th>Name</th>
-            <th>Email</th>
-            <th>Department</th>
+            <th className="d-none d-md-table-cell">Email</th>
+            <th className="d-none d-md-table-cell">Department</th>
             <th>Score</th>
             <th>Status</th>
           </tr>
@@ -59,8 +59,8 @@ export default function SelectableInternsTable({
               </td>
               <td className="fw-medium">#{row.rank}</td>
               <td>{row.fullName}</td>
-              <td className="text-muted-2">{row.email}</td>
-              <td>{row.department}</td>
+              <td className="text-muted-2 d-none d-md-table-cell">{row.email}</td>
+              <td className="d-none d-md-table-cell">{row.department}</td>
               <td className="fw-bold">{row.score}</td>
               <td>
                 <StatusBadge status={computeStatus(row.score)} />
