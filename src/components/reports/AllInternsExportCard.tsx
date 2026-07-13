@@ -87,12 +87,13 @@ export default function AllInternsExportCard({ interns }: { interns: RankedInter
   return (
     <div className="card">
       <div className="card-body">
-        <h2 className="h6 fw-bold mb-1">Export Interns</h2>
+        <h2 className="section-title mb-1">Export Interns</h2>
         <p className="text-muted-2 small mb-3">
           Search, filter, and select interns to export as CSV.
         </p>
 
-        <div className="row g-2 mb-3 align-items-center">
+        <div className="card-toolbar p-2 mb-3">
+          <div className="row g-2 align-items-center">
           <div className="col-12 col-md-5">
             <input
               type="search"
@@ -130,6 +131,7 @@ export default function AllInternsExportCard({ interns }: { interns: RankedInter
                 Top 10 only
               </label>
             </div>
+          </div>
           </div>
         </div>
 

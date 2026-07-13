@@ -74,3 +74,21 @@ export function IconHistory({ size = 20, className }: IconProps) {
     </svg>
   );
 }
+
+export function IconSearch({ size = 20, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M20 20l-4.8-4.8" />
+    </svg>
+  );
+}
+
+export function IconFlag({ size = 20, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M5 21V4" />
+      <path d="M5 4h13l-3 4.5L18 13H5" />
+    </svg>
+  );
+}

@@ -5,6 +5,7 @@ import type { ScoreHistoryEntry } from "@/lib/actions/scores";
 import { timeAgo, formatFullDateTime } from "@/lib/utils/time";
 import Spinner from "@/components/shared/Spinner";
 import EmptyState from "@/components/shared/EmptyState";
+import { IconHistory, IconSearch } from "@/components/shared/icons";
 import DeltaBadge from "@/components/history/DeltaBadge";
 import ScoreHistoryRow from "@/components/history/ScoreHistoryRow";
 
@@ -65,8 +66,8 @@ export default function HistoryPage() {
   return (
     <main className="container-fluid py-4 px-4">
       <div className="mb-4">
-        <h1 className="h3 fw-bold mb-1">Score History</h1>
-        <p className="text-muted-2 mb-0">
+        <h1 className="page-title">Score History</h1>
+        <p className="page-subtitle">
           Every score change, most recent first (last 100 entries).
         </p>
       </div>
@@ -75,7 +76,7 @@ export default function HistoryPage() {
       {loading && <Spinner label="Loading history…" />}
 
       {!loading && history.length > 0 && (
-        <div className="card mb-3">
+        <div className="card card-toolbar mb-3">
           <div className="card-body">
             <div className="row g-2 mb-2">
               <div className="col-12 col-md-6">
@@ -145,7 +146,7 @@ export default function HistoryPage() {
 
       {!loading && history.length === 0 && (
         <EmptyState
-          icon="🕒"
+          icon={<IconHistory size={26} />}
           title="No score changes yet"
           description="Score history will appear here once scores are updated."
         />
@@ -153,7 +154,7 @@ export default function HistoryPage() {
 
       {!loading && history.length > 0 && filtered.length === 0 && (
         <EmptyState
-          icon="🔍"
+          icon={<IconSearch size={26} />}
           title="No matching entries"
           description="Try a different search, intern, date range, or direction."
         />

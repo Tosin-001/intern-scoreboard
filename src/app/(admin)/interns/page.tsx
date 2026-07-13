@@ -6,6 +6,7 @@ import { computeStatus } from "@/types/firestore";
 import StatusBadge from "@/components/shared/StatusBadge";
 import Spinner from "@/components/shared/Spinner";
 import EmptyState from "@/components/shared/EmptyState";
+import { IconInterns } from "@/components/shared/icons";
 import InternFormModal from "@/components/interns/InternFormModal";
 import ConfirmDeleteModal from "@/components/interns/ConfirmDeleteModal";
 
@@ -71,15 +72,15 @@ export default function InternsPage() {
     <main className="container-fluid py-4 px-4">
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
-          <h1 className="h3 fw-bold mb-1">Interns</h1>
-          <p className="text-muted-2 mb-0">Manage intern records and scores.</p>
+          <h1 className="page-title">Interns</h1>
+          <p className="page-subtitle">Manage intern records and scores.</p>
         </div>
         <button className="btn btn-primary" onClick={openCreateModal}>
           + Add Intern
         </button>
       </div>
 
-      <div className="card mb-3">
+      <div className="card card-toolbar mb-3">
         <div className="card-body py-2">
           <div className="row g-2">
             <div className="col-12 col-md-8">
@@ -114,7 +115,7 @@ export default function InternsPage() {
 
       {!loading && !error && visibleInterns.length === 0 && (
         <EmptyState
-          icon="🧑‍💻"
+          icon={<IconInterns size={26} />}
           title={search || department ? "No matching interns" : "No interns yet"}
           description={
             search || department

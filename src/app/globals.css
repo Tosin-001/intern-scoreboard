@@ -1,6 +1,7 @@
 :root {
   --brand-primary: #4f46e5;
   --brand-primary-dark: #4338ca;
+  --brand-primary-subtle: #eef2ff;
   --brand-bg: #f7f8fb;
   --brand-surface: #ffffff;
   --brand-border: #e5e7eb;
@@ -12,6 +13,42 @@
   --brand-radius: 12px;
   --brand-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.06);
   --brand-shadow-lg: 0 4px 6px rgba(16, 24, 40, 0.05), 0 10px 15px rgba(16, 24, 40, 0.08);
+
+  /* --- Phase A additions below: tokens only, not yet applied anywhere. --- */
+
+  /* Neutral gray scale — formalizes grays that were previously hardcoded
+     ad hoc (e.g. sidebar hover used #f3f4f6 directly). Phase B will point
+     Bootstrap overrides at these instead of Bootstrap's own defaults. */
+  --brand-gray-50: #f9fafb;
+  --brand-gray-100: #f3f4f6;
+  --brand-gray-200: #e5e7eb; /* same value as --brand-border, kept as an alias */
+  --brand-gray-600: #6b7280; /* same value as --brand-text-muted, kept as an alias */
+
+  /* Podium rank accents — used in Phase E when medal emoji are replaced
+     with a color-coded rank treatment. */
+  --brand-gold: #f59e0b;
+  --brand-gold-subtle: #fef3c7;
+  --brand-silver: #94a3b8;
+  --brand-silver-subtle: #f1f5f9;
+  --brand-bronze: #c2703d;
+  --brand-bronze-subtle: #fce8d9;
+
+  /* Typography scale — small, deliberate set replacing ad hoc Bootstrap
+     h3/h5/h6 + fw-bold combinations. Not yet applied to any element. */
+  --fs-page-title: 1.5rem;
+  --fs-section-title: 1rem;
+  --fs-body: 0.9375rem;
+  --fs-small: 0.8125rem;
+  --fs-micro: 0.75rem;
+
+  /* Spacing scale — documents the values already in informal use
+     (py-4/px-4 containers, mb-3/mb-4 cards) so later phases can apply
+     them consistently instead of each page inventing its own numbers. */
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
 }
 
 html {
@@ -47,19 +84,22 @@ body {
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
   font-weight: 500;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   text-decoration: none;
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  border-left: 3px solid transparent;
 }
 .sidebar-link:hover {
-  background-color: #f3f4f6;
+  background-color: var(--brand-gray-100);
   color: var(--brand-text);
 }
 .sidebar-link.active {
-  background-color: #eef2ff;
+  background-color: var(--brand-primary-subtle);
   color: var(--brand-primary);
+  font-weight: 600;
+  border-left-color: var(--brand-primary);
 }
 
 .podium-card {
@@ -110,4 +150,117 @@ body {
   justify-content: center;
   z-index: 1050;
   padding: 1rem;
+}
+
+/* ============================================================================
+   Phase A — new utility classes. Defined here, not yet used by any
+   component (that's Phase E's job — standardizing page headers). Adding
+   them now, unused, so later phases are pure "swap the markup" changes
+   with no CSS risk introduced at that point.
+   ============================================================================ */
+
+.page-title {
+  font-size: var(--fs-page-title);
+  font-weight: 700;
+  color: var(--brand-text);
+  margin-bottom: 0.25rem;
+}
+
+.page-subtitle {
+  font-size: var(--fs-body);
+  color: var(--brand-text-muted);
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: var(--fs-section-title);
+  font-weight: 700;
+  color: var(--brand-text);
+}
+
+/* ============================================================================
+   Phase B — global Bootstrap overrides. These target Bootstrap's own
+   classes directly (loaded before this file in layout.tsx, so equal-
+   specificity rules here win in the cascade) — every existing page/
+   component picks these up automatically with zero markup changes.
+   ============================================================================ */
+
+/* .btn-outline-secondary previously fell back to Bootstrap's default gray,
+   a different hue family than --brand-primary. Retuned to the brand gray
+   scale so outline buttons visually belong to the same system as
+   .btn-primary instead of looking like an unrelated default. */
+.btn-outline-secondary {
+  color: var(--brand-text-muted);
+  border-color: var(--brand-gray-200);
+}
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+  color: var(--brand-text);
+  background-color: var(--brand-gray-100);
+  border-color: var(--brand-gray-200);
+}
+
+/* Badge consistency: base sizing/weight for any badge, plus retuning the
+   Bootstrap "-subtle" background/text pairs already in use (StatusBadge,
+   DeltaBadge) to the brand's color hues instead of Bootstrap's own
+   defaults — same fix pattern as the button override above. Status
+   *logic* (which badge gets which class) is unchanged; only the resulting
+   colors are retuned. */
+.badge {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.bg-primary-subtle {
+  background-color: var(--brand-primary-subtle) !important;
+}
+.text-primary-emphasis {
+  color: var(--brand-primary-dark) !important;
+}
+
+.bg-success-subtle {
+  background-color: #dcfce7 !important;
+}
+.text-success-emphasis {
+  color: #15803d !important;
+}
+
+.bg-warning-subtle {
+  background-color: #fef3c7 !important;
+}
+.text-warning-emphasis {
+  color: #b45309 !important;
+}
+
+.bg-danger-subtle {
+  background-color: #fee2e2 !important;
+}
+.text-danger-emphasis {
+  color: #b91c1c !important;
+}
+
+.bg-secondary-subtle {
+  background-color: var(--brand-gray-100) !important;
+}
+.text-secondary-emphasis {
+  color: var(--brand-text-muted) !important;
+}
+
+/* Table row hover — gives scanning a row a subtle affordance it didn't
+   have before. No change to structure, borders, or column widths. */
+.table-clean tbody tr {
+  transition: background-color 0.1s ease;
+}
+.table-clean tbody tr:hover {
+  background-color: var(--brand-gray-50);
+}
+
+/* .card-toolbar — defined now, not yet applied to any component (that's a
+   later phase, per "do not modify page markup yet"). Visually separates a
+   filter/search toolbar from regular content cards via a tinted
+   background instead of looking identical to every other .card. */
+.card-toolbar {
+  background-color: var(--brand-gray-50);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--brand-radius);
 }

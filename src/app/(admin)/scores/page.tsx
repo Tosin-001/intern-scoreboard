@@ -5,6 +5,7 @@ import type { InternRecord } from "@/lib/actions/interns";
 import type { ScoreHistoryEntry } from "@/lib/actions/scores";
 import Spinner from "@/components/shared/Spinner";
 import EmptyState from "@/components/shared/EmptyState";
+import { IconInterns, IconSearch } from "@/components/shared/icons";
 import ScoreHistoryRow from "@/components/history/ScoreHistoryRow";
 
 function clampScore(n: number): number {
@@ -146,8 +147,8 @@ export default function ScoresPage() {
   return (
     <main className="container-fluid py-4 px-4">
       <div className="mb-4">
-        <h1 className="h3 fw-bold mb-1">Score Management</h1>
-        <p className="text-muted-2 mb-0">
+        <h1 className="page-title">Score Management</h1>
+        <p className="page-subtitle">
           Adjust scores directly, without editing full intern records.
         </p>
       </div>
@@ -156,7 +157,7 @@ export default function ScoresPage() {
       {loading && <Spinner label="Loading scores…" />}
 
       {!loading && interns.length > 0 && (
-        <div className="card mb-3">
+        <div className="card card-toolbar mb-3">
           <div className="card-body py-2">
             <input
               type="search"
@@ -170,7 +171,7 @@ export default function ScoresPage() {
       )}
 
       {!loading && interns.length > 0 && (
-        <div className="card mb-3">
+        <div className="card card-toolbar mb-3">
           <div className="card-body">
             <div className="d-flex flex-wrap align-items-end gap-2">
               <div>
@@ -210,11 +211,11 @@ export default function ScoresPage() {
       )}
 
       {!loading && interns.length === 0 && (
-        <EmptyState icon="🧑‍💻" title="No interns yet" description="Add interns first, then adjust scores here." />
+        <EmptyState icon={<IconInterns size={26} />} title="No interns yet" description="Add interns first, then adjust scores here." />
       )}
 
       {!loading && interns.length > 0 && visibleInterns.length === 0 && (
-        <EmptyState icon="🔍" title="No matching interns" description="Try a different search term." />
+        <EmptyState icon={<IconSearch size={26} />} title="No matching interns" description="Try a different search term." />
       )}
 
       {!loading && visibleInterns.length > 0 && (
@@ -390,7 +391,7 @@ export default function ScoresPage() {
             <div className="card">
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center mb-3">
-                  <h2 className="h6 fw-bold mb-0">Recent Score Changes</h2>
+                  <h2 className="section-title mb-0">Recent Score Changes</h2>
                   <a href="/history" className="small">
                     View All History →
                   </a>

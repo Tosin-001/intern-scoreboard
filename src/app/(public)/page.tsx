@@ -13,7 +13,14 @@ import { computeStatus, type LeaderboardEntry } from "@/types/firestore";
 import StatusBadge from "@/components/shared/StatusBadge";
 import Spinner from "@/components/shared/Spinner";
 import EmptyState from "@/components/shared/EmptyState";
+import { IconFlag, IconSearch } from "@/components/shared/icons";
 import LeaderboardTable from "@/components/leaderboard/LeaderboardTable";
+
+const RANK_COLORS: Record<number, { solid: string; subtle: string }> = {
+  1: { solid: "var(--brand-gold)", subtle: "var(--brand-gold-subtle)" },
+  2: { solid: "var(--brand-silver)", subtle: "var(--brand-silver-subtle)" },
+  3: { solid: "var(--brand-bronze)", subtle: "var(--brand-bronze-subtle)" },
+};
 
 export default function PublicLeaderboardPage() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
@@ -90,8 +97,8 @@ export default function PublicLeaderboardPage() {
       <div className="border-bottom bg-white">
         <div className="container py-4 d-flex justify-content-between align-items-center">
           <div>
-            <h1 className="h4 fw-bold mb-0">Intern Leaderboard</h1>
-            <p className="text-muted-2 small mb-0">Live rankings, updated in real time</p>
+            <h1 className="page-title mb-0">Intern Leaderboard</h1>
+            <p className="page-subtitle small">Live rankings, updated in real time</p>
           </div>
           <a href="/login" className="btn btn-outline-secondary btn-sm">
             Admin login
@@ -105,14 +112,14 @@ export default function PublicLeaderboardPage() {
 
         {!loading && !error && entries.length === 0 && (
           <EmptyState
-            icon="🏁"
+            icon={<IconFlag size={26} />}
             title="No interns on the board yet"
             description="Rankings will appear here once interns are added."
           />
         )}
 
         {!loading && !error && entries.length > 0 && (
-          <div className="card mb-4">
+          <div className="card card-toolbar mb-4">
             <div className="card-body py-3">
               <div className="row g-2 align-items-center">
                 <div className="col-12 col-md-5">
@@ -165,11 +172,23 @@ export default function PublicLeaderboardPage() {
                 <div className="col-12 col-sm-4" key={entry.id}>
                   <div
                     className="podium-card card text-center p-3 h-100"
-                    style={{ marginTop: i === 1 ? 0 : undefined }}
+                    style={{
+                      marginTop: i === 1 ? 0 : undefined,
+                      borderTop: entry.rank === 1 ? "3px solid var(--brand-gold)" : undefined,
+                    }}
                   >
                     <div className="d-none d-sm-block" style={{ height: i === 1 ? 0 : 24 }} />
-                    <div className="fs-2 mb-1">
-                      {entry.rank === 1 ? "🥇" : entry.rank === 2 ? "🥈" : "🥉"}
+                    <div
+                      className="d-inline-flex align-items-center justify-content-center rounded-circle fw-bold mx-auto mb-2"
+                      style={{
+                        width: entry.rank === 1 ? 44 : 38,
+                        height: entry.rank === 1 ? 44 : 38,
+                        fontSize: entry.rank === 1 ? "1.15rem" : "1rem",
+                        backgroundColor: RANK_COLORS[entry.rank]?.subtle,
+                        color: RANK_COLORS[entry.rank]?.solid,
+                      }}
+                    >
+                      {entry.rank}
                     </div>
                     <div className="fw-bold text-truncate">{entry.fullName}</div>
                     <div className="text-muted-2 small mb-2">{entry.department}</div>
@@ -194,7 +213,7 @@ export default function PublicLeaderboardPage() {
 
         {!loading && !error && isFiltering && filteredEntries.length === 0 && (
           <EmptyState
-            icon="🔍"
+            icon={<IconSearch size={26} />}
             title="No matching interns"
             description="Try a different search term or filter."
           />

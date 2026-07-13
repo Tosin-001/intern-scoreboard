@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import type { InternRecord } from "@/lib/actions/interns";
 import Spinner from "@/components/shared/Spinner";
 import EmptyState from "@/components/shared/EmptyState";
+import { IconReports } from "@/components/shared/icons";
 import AllInternsExportCard, {
   type RankedIntern,
 } from "@/components/reports/AllInternsExportCard";
@@ -46,8 +47,8 @@ export default function ReportsPage() {
   return (
     <main className="container-fluid py-4 px-4">
       <div className="mb-4">
-        <h1 className="h3 fw-bold mb-1">Reports</h1>
-        <p className="text-muted-2 mb-0">Export intern data to CSV.</p>
+        <h1 className="page-title">Reports</h1>
+        <p className="page-subtitle">Export intern data to CSV.</p>
       </div>
 
       {loading && <Spinner label="Loading data…" />}
@@ -55,7 +56,7 @@ export default function ReportsPage() {
 
       {!loading && !error && rankedInterns.length === 0 && (
         <EmptyState
-          icon="📄"
+          icon={<IconReports size={26} />}
           title="Nothing to export yet"
           description="Add interns first, then come back here to export reports."
         />

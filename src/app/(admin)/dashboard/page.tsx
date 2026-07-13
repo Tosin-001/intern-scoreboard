@@ -49,8 +49,8 @@ export default async function DashboardPage() {
   return (
     <main className="container-fluid py-4 px-4">
       <div className="mb-4">
-        <h1 className="h3 fw-bold mb-1">Dashboard</h1>
-        <p className="text-muted-2 mb-0">Welcome back, {session.email}</p>
+        <h1 className="page-title">Dashboard</h1>
+        <p className="page-subtitle">Welcome back, {session.email}</p>
       </div>
 
       <div className="row g-3 mb-4">
@@ -64,7 +64,7 @@ export default async function DashboardPage() {
         <div className="col-12 col-lg-6">
           <div className="card h-100">
             <div className="card-body">
-              <h2 className="h6 fw-bold mb-3">Top Performers</h2>
+              <h2 className="section-title mb-3">Top Performers</h2>
               <TopPerformersChart data={topPerformers} />
             </div>
           </div>
@@ -72,7 +72,7 @@ export default async function DashboardPage() {
         <div className="col-12 col-lg-6">
           <div className="card h-100">
             <div className="card-body">
-              <h2 className="h6 fw-bold mb-3">Score Distribution</h2>
+              <h2 className="section-title mb-3">Score Distribution</h2>
               <ScoreDistributionChart data={distribution} />
             </div>
           </div>
@@ -81,7 +81,7 @@ export default async function DashboardPage() {
 
       <div className="card">
         <div className="card-body">
-          <h2 className="h6 fw-bold mb-2">Quick actions</h2>
+          <h2 className="section-title mb-2">Quick actions</h2>
           <p className="text-muted-2 small mb-3">
             Manage interns, update scores, and review rankings.
           </p>
