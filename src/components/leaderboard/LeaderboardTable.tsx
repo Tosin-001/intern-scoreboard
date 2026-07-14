@@ -5,10 +5,10 @@ export default function LeaderboardTable({ entries }: { entries: LeaderboardEntr
   return (
     <div className="card">
       <div className="table-responsive">
-        <table className="table table-clean mb-0">
+        <table className="table table-clean leaderboard-table mb-0">
           <thead>
             <tr>
-              <th scope="col">Rank</th>
+              <th scope="col" style={{ width: 72 }}>Rank</th>
               <th scope="col">Name</th>
               <th scope="col">Department</th>
               <th scope="col">Score</th>
@@ -18,8 +18,10 @@ export default function LeaderboardTable({ entries }: { entries: LeaderboardEntr
           <tbody>
             {entries.map((entry) => (
               <tr key={entry.id}>
-                <td className="fw-medium">#{entry.rank}</td>
-                <td>{entry.fullName}</td>
+                <td>
+                  <span className="leaderboard-table-rank">#{entry.rank}</span>
+                </td>
+                <td className="fw-medium">{entry.fullName}</td>
                 <td className="text-muted-2">{entry.department}</td>
                 <td className="fw-bold">{entry.score}</td>
                 <td>

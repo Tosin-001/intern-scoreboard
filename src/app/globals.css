@@ -264,3 +264,166 @@ body {
   border: 1px solid var(--brand-border);
   border-radius: var(--brand-radius);
 }
+
+/* ============================================================================
+   Public leaderboard hero + toolbar + podium polish.
+   Every class below is new and scoped to this one page — none of them
+   modify shared classes used by admin pages (.card, .card-toolbar,
+   .table-clean base rules, .badge, StatusBadge colors are all untouched).
+   .podium-card is extended directly since it's exclusively used by the
+   public leaderboard (verified via grep before making this change).
+   No animation beyond the pre-existing 0.15s hover transform on
+   .podium-card — nothing new added here moves or animates.
+   ============================================================================ */
+
+.leaderboard-hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 50%, #faf9ff 100%);
+  border-bottom: 1px solid var(--brand-border);
+}
+
+/* Soft blurred gradient blobs — pure CSS, no images. */
+.leaderboard-hero::before,
+.leaderboard-hero::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+.leaderboard-hero::before {
+  width: 320px;
+  height: 320px;
+  top: -140px;
+  right: -80px;
+  background: rgba(79, 70, 229, 0.18);
+}
+.leaderboard-hero::after {
+  width: 260px;
+  height: 260px;
+  bottom: -120px;
+  left: -60px;
+  background: rgba(147, 51, 234, 0.12);
+}
+
+/* Dot-grid pattern, layered above the blobs via z-index, low opacity. */
+.leaderboard-hero-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(79, 70, 229, 0.15) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Small geometric accent — a single rotated outlined square, top-right. */
+.leaderboard-hero-accent {
+  position: absolute;
+  top: 28px;
+  right: 64px;
+  width: 34px;
+  height: 34px;
+  border: 2px solid rgba(79, 70, 229, 0.25);
+  border-radius: 8px;
+  transform: rotate(18deg);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.leaderboard-hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.leaderboard-hero-stat {
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(79, 70, 229, 0.12);
+  border-radius: var(--brand-radius);
+  padding: 0.85rem 1rem;
+  backdrop-filter: blur(4px);
+}
+.leaderboard-hero-stat-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--brand-text);
+  line-height: 1.1;
+}
+.leaderboard-hero-stat-label {
+  font-size: var(--fs-small);
+  color: var(--brand-text-muted);
+}
+
+/* Toolbar: premium search/filter treatment, scoped to this page only —
+   does NOT modify the shared .card-toolbar class admin pages also use. */
+.leaderboard-toolbar {
+  background-color: #ffffff;
+  border: 1px solid var(--brand-border);
+  border-radius: var(--brand-radius);
+  box-shadow: var(--brand-shadow);
+}
+.leaderboard-toolbar .form-control,
+.leaderboard-toolbar .form-select {
+  border-color: var(--brand-gray-200);
+  border-radius: 8px;
+}
+.leaderboard-toolbar .form-control:focus,
+.leaderboard-toolbar .form-select:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px var(--brand-primary-subtle);
+}
+.leaderboard-toolbar-search-wrap {
+  position: relative;
+}
+.leaderboard-toolbar-search-wrap input {
+  padding-left: 2.25rem;
+}
+.leaderboard-toolbar-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--brand-text-muted);
+  pointer-events: none;
+}
+.leaderboard-toolbar-toggle {
+  background-color: var(--brand-gray-50);
+  border: 1px solid var(--brand-gray-200);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* Podium: stronger accents, subtle gradient allowed, no new animation. */
+.podium-card--rank-1 {
+  background: linear-gradient(180deg, var(--brand-gold-subtle) 0%, #ffffff 55%);
+  border-top: 3px solid var(--brand-gold) !important;
+}
+.podium-card--rank-2 {
+  background: linear-gradient(180deg, var(--brand-silver-subtle) 0%, #ffffff 55%);
+  border-top: 3px solid var(--brand-silver) !important;
+}
+.podium-card--rank-3 {
+  background: linear-gradient(180deg, var(--brand-bronze-subtle) 0%, #ffffff 55%);
+  border-top: 3px solid var(--brand-bronze) !important;
+}
+
+/* Rest-of-board table polish — scoped via an additional class alongside
+   the shared .table-clean, so admin tables (which only use .table-clean)
+   are completely unaffected. */
+.leaderboard-table thead th {
+  background-color: var(--brand-gray-50);
+}
+.leaderboard-table-rank {
+  display: inline-block;
+  background-color: var(--brand-gray-100);
+  color: var(--brand-text-muted);
+  font-weight: 600;
+  font-size: var(--fs-small);
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+}

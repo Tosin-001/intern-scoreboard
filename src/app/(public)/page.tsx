@@ -92,17 +92,50 @@ export default function PublicLeaderboardPage() {
   const podium = entries.slice(0, 3);
   const rest = entries.slice(3);
 
+  // Hero stat values — all derived from `entries`/`departments`, already
+  // computed above from the single onSnapshot listener. No new queries.
+  const totalInterns = entries.length;
+  const topScore = entries[0]?.score ?? 0;
+  const departmentCount = departments.length;
+
   return (
     <main style={{ background: "var(--brand-bg)", minHeight: "100vh" }}>
-      <div className="border-bottom bg-white">
-        <div className="container py-4 d-flex justify-content-between align-items-center">
-          <div>
-            <h1 className="page-title mb-0">Intern Leaderboard</h1>
-            <p className="page-subtitle small">Live rankings, updated in real time</p>
+      <div className="leaderboard-hero">
+        <div className="leaderboard-hero-dots" />
+        <div className="leaderboard-hero-accent" />
+        <div className="container py-4 leaderboard-hero-content">
+          <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+            <div>
+              <h1 className="page-title mb-0">Intern Leaderboard</h1>
+              <p className="page-subtitle small">Live rankings, updated in real time</p>
+            </div>
+            <a href="/login" className="btn btn-outline-secondary btn-sm">
+              Admin login
+            </a>
           </div>
-          <a href="/login" className="btn btn-outline-secondary btn-sm">
-            Admin login
-          </a>
+
+          {!loading && !error && entries.length > 0 && (
+            <div className="row g-2">
+              <div className="col-4">
+                <div className="leaderboard-hero-stat">
+                  <div className="leaderboard-hero-stat-value">{totalInterns}</div>
+                  <div className="leaderboard-hero-stat-label">Total Interns</div>
+                </div>
+              </div>
+              <div className="col-4">
+                <div className="leaderboard-hero-stat">
+                  <div className="leaderboard-hero-stat-value">{topScore}</div>
+                  <div className="leaderboard-hero-stat-label">Top Score</div>
+                </div>
+              </div>
+              <div className="col-4">
+                <div className="leaderboard-hero-stat">
+                  <div className="leaderboard-hero-stat-value">{departmentCount}</div>
+                  <div className="leaderboard-hero-stat-label">Departments</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -119,17 +152,22 @@ export default function PublicLeaderboardPage() {
         )}
 
         {!loading && !error && entries.length > 0 && (
-          <div className="card card-toolbar mb-4">
-            <div className="card-body py-3">
+          <div className="leaderboard-toolbar mb-4">
+            <div className="p-3">
               <div className="row g-2 align-items-center">
                 <div className="col-12 col-md-5">
-                  <input
-                    type="search"
-                    className="form-control"
-                    placeholder="Search by name…"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
+                  <div className="leaderboard-toolbar-search-wrap">
+                    <span className="leaderboard-toolbar-search-icon">
+                      <IconSearch size={16} />
+                    </span>
+                    <input
+                      type="search"
+                      className="form-control"
+                      placeholder="Search by name…"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                  </div>
                 </div>
                 <div className="col-12 col-sm-6 col-md-4">
                   <select
@@ -145,19 +183,21 @@ export default function PublicLeaderboardPage() {
                     ))}
                   </select>
                 </div>
-                <div className="col-12 col-sm-6 col-md-3 d-flex align-items-center">
-                  <div className="form-check form-switch mb-0">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      role="switch"
-                      id="top10Toggle"
-                      checked={top10Only}
-                      onChange={(e) => setTop10Only(e.target.checked)}
-                    />
-                    <label className="form-check-label small" htmlFor="top10Toggle">
-                      Top 10 only
-                    </label>
+                <div className="col-12 col-sm-6 col-md-3">
+                  <div className="leaderboard-toolbar-toggle">
+                    <div className="form-check form-switch mb-0">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="top10Toggle"
+                        checked={top10Only}
+                        onChange={(e) => setTop10Only(e.target.checked)}
+                      />
+                      <label className="form-check-label small" htmlFor="top10Toggle">
+                        Top 10 only
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -171,33 +211,29 @@ export default function PublicLeaderboardPage() {
               entry ? (
                 <div className="col-12 col-sm-4" key={entry.id}>
                   <div
-                    className="podium-card card text-center p-3 h-100"
-                    style={{
-                      marginTop: i === 1 ? 0 : undefined,
-                      borderTop: entry.rank === 1 ? "3px solid var(--brand-gold)" : undefined,
-                    }}
+                    className={`podium-card card text-center p-4 h-100 podium-card--rank-${entry.rank}`}
+                    style={{ marginTop: i === 1 ? 0 : undefined }}
                   >
                     <div className="d-none d-sm-block" style={{ height: i === 1 ? 0 : 24 }} />
                     <div
-                      className="d-inline-flex align-items-center justify-content-center rounded-circle fw-bold mx-auto mb-2"
+                      className="d-inline-flex align-items-center justify-content-center rounded-circle fw-bold mx-auto mb-3"
                       style={{
-                        width: entry.rank === 1 ? 44 : 38,
-                        height: entry.rank === 1 ? 44 : 38,
-                        fontSize: entry.rank === 1 ? "1.15rem" : "1rem",
-                        backgroundColor: RANK_COLORS[entry.rank]?.subtle,
-                        color: RANK_COLORS[entry.rank]?.solid,
+                        width: entry.rank === 1 ? 48 : 40,
+                        height: entry.rank === 1 ? 48 : 40,
+                        fontSize: entry.rank === 1 ? "1.25rem" : "1.05rem",
+                        backgroundColor: RANK_COLORS[entry.rank]?.solid,
+                        color: "#ffffff",
+                        boxShadow: entry.rank === 1 ? "0 4px 10px rgba(245, 158, 11, 0.35)" : "none",
                       }}
                     >
                       {entry.rank}
                     </div>
-                    <div className="fw-bold text-truncate">{entry.fullName}</div>
-                    <div className="text-muted-2 small mb-2">{entry.department}</div>
-                    <div className="fs-4 fw-bold" style={{ color: "var(--brand-primary)" }}>
+                    <div className="fw-bold text-truncate mb-1">{entry.fullName}</div>
+                    <div className="text-muted-2 small mb-3">{entry.department}</div>
+                    <div className="fs-3 fw-bold mb-2" style={{ color: "var(--brand-primary)" }}>
                       {entry.score}
                     </div>
-                    <div className="mt-2">
-                      <StatusBadge status={entry.status} />
-                    </div>
+                    <StatusBadge status={entry.status} />
                   </div>
                 </div>
               ) : (
